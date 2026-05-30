@@ -1,0 +1,246 @@
+/* CONTAINER BAO TRÒN TOÀN BỘ MÀN HÌNH - KHÔNG CHO CSS NGOÀI XÂM PHẠM */
+.dgky-screen-wrapper {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 15%, #f8fafc 40%) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  overflow-y: auto !important; /* Cho phép cuộn dọc nếu màn hình nhỏ */
+  overflow-x: hidden !important;
+  z-index: 999999 !important; /* Đẩy lên trên cùng độc lập */
+}
+
+.dgky-screen-wrapper * {
+  box-sizing: border-box !important;
+}
+
+/* THẺ CARD TRUNG TÂM CHỨA FORM */
+.dgky-main-card {
+  background: #ffffff !important;
+  width: 100% !important;
+  max-width: 450px !important;
+  padding: 40px 35px !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15) !important;
+  margin: auto !important; /* Đảm bảo căn giữa chuẩn */
+}
+
+.dgky-main-title {
+  margin: 0 0 8px 0 !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  color: #0369a1 !important;
+  text-align: center !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+}
+
+.dgky-main-subtitle {
+  margin: 0 0 30px 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #64748b !important;
+  text-align: center !important;
+}
+
+/* KHUNG FORM */
+.dgky-core-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  width: 100% !important;
+}
+
+.dgky-field-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  width: 100% !important;
+}
+
+.dgky-field-group label {
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #0284c7 !important;
+  text-align: left !important;
+}
+
+/* 🌟 PHONG CÁCH INPUT GẠCH CHÂN BOTTOM-LINE CHUẨN ĐẸP (PHÁ BỎ VIỀN XÁM THÔ) */
+.dgky-custom-input {
+  width: 100% !important;
+  padding: 8px 0px 10px 0px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: #1e293b !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #cbd5e1 !important; /* Đường gạch dưới mảnh */
+  border-radius: 0px !important; /* Xóa bỏ bo tròn góc vuông thô kệch */
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.dgky-custom-input:focus {
+  border-bottom-color: #0284c7 !important; /* Đổi màu khi nhấp chuột vào */
+}
+
+.dgky-custom-input::placeholder {
+  color: #cbd5e1 !important;
+}
+
+/* KHỐI GPS VỆ TINH */
+.dgky-gps-box {
+  margin: 5px 0 !important;
+  padding: 16px !important;
+  border: 1px dashed #0284c7 !important;
+  border-radius: 12px !important;
+  text-align: center !important;
+  background-color: #f0f7ff !important;
+  width: 100% !important;
+}
+
+.dgky-gps-title {
+  font-weight: 700 !important;
+  display: block !important;
+  margin-bottom: 12px !important;
+  color: #0f172a !important;
+  font-size: 13.5px !important;
+}
+
+.dgky-gps-btn-auto {
+  padding: 10px 22px !important;
+  background: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 20px !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2) !important;
+}
+
+.dgky-gps-btn-hand {
+  display: block !important;
+  margin: 10px auto 0 auto !important;
+  font-size: 12.5px !important;
+  background: none !important;
+  border: none !important;
+  color: #16a34a !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+}
+
+.dgky-gps-loading { color: #ea580c !important; font-weight: 600 !important; font-size: 13px !important; }
+.dgky-gps-success-msg { color: #16a34a !important; font-weight: 600 !important; font-size: 13px !important; margin-bottom: 6px !important; }
+
+.dgky-gps-textarea {
+  width: 100% !important;
+  height: 75px !important;
+  padding: 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  font-size: 13.5px !important;
+  font-family: inherit !important;
+  resize: none !important;
+  outline: none !important;
+}
+
+.dgky-gps-coords { font-size: 11px !important; color: #94a3b8 !important; margin-top: 6px !important; }
+.dgky-gps-re-trigger { background: none !important; border: none !important; color: #0284c7 !important; text-decoration: underline !important; cursor: pointer !important; font-size: 12px !important; }
+
+/* NÚT ĐĂNG KÝ HÌNH VIÊN THUỐC */
+.dgky-submit-btn {
+  padding: 14px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  background: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%) !important;
+  border: none !important;
+  border-radius: 30px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.25) !important;
+  margin-top: 5px !important;
+}
+
+.dgky-submit-btn:disabled {
+  background: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+/* ĐIỀU HƯỚNG */
+.dgky-bottom-redirect {
+  margin-top: 25px !important;
+  text-align: center !important;
+}
+
+.dgky-bottom-redirect p {
+  font-size: 13.5px !important;
+  color: #64748b !important;
+}
+
+.dgky-redirect-link {
+  font-weight: 600 !important;
+  color: #0284c7 !important;
+  text-decoration: none !important;
+}
+
+/* THÔNG BÁO */
+.dgky-alert-success, .dgky-alert-error {
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  margin-bottom: 20px !important;
+  text-align: center !important;
+}
+.dgky-alert-success { background-color: #f0fdf4 !important; color: #16a34a !important; border: 1px solid #bbf7d0 !important; }
+.dgky-alert-error { background-color: #fef2f2 !important; color: #dc2626 !important; border: 1px solid #fecaca !important; }
+
+/* MOBILE RESPONSIVE */
+/* ==========================================================================
+   📱 MOBILE RESPONSIVE: ĐỔI MÀU NỀN CARD SANG TRỌNG CHO ĐIỆN THOẠI
+   ========================================================================== */
+   @media (max-width: 480px) {
+    /* Giữ nền Gradient đại dương sâu thẳm phía sau */
+    .dgky-screen-wrapper {
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 40%, #0f172a 100%) !important;
+      align-items: center !important; 
+      padding: 24px 16px !important;  
+    }
+  
+    /* ĐỔI MÀU NỀN TRONG LÒNG CARD: Chọn 1 trong 2 kiểu dưới đây */
+    .dgky-main-card {
+      /* KIỂU SANG TRỌNG: Màu Trắng Xám Khói để làm nổi bật line gạch chân */
+      background: #f8fafc !important; 
+      
+      /* HOẶC NẾU BẠN MUỐN ĐỔI HẲN SANG PHONG CÁCH TỐI (DARK MODE) CỰC NGẦU,
+         hãy xóa dấu lệnh comment dòng dưới đây và khóa dòng background trên lại: */
+      /* background: rgba(255, 255, 255, 0.92) !important; */
+  
+      padding: 30px 20px !important;  
+      border-radius: 24px !important;  /* Bo tròn sâu tạo phom hộp app di động */
+      
+      /* Đổ bóng kép cường độ cao để tạo khối nổi 3D tách biệt khỏi nền */
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                  0 20px 25px -5px rgba(0, 0, 0, 0.25) !important;
+      
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: auto !important;
+    }
+  }

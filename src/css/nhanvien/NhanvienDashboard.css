@@ -1,0 +1,23 @@
+/* 💼 GIAO DIỆN DASHBOARD NHÂN VIÊN */
+
+.nhanvien-dashboard-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    color: #333333;
+  }
+  
+  .nhanvien-dashboard-container h2 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+  
+  .nhanvien-dashboard-container p {
+    font-size: 15px;
+    color: #7f8c8d;
+    margin: 0;
+    line-height: 1.5;
+  }
