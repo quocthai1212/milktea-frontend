@@ -10,12 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.17.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.17.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.16.0"
+=======
+    "jsonwebtoken": "^9.0.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1"
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

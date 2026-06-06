@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+<<<<<<< HEAD
 import {
   Bot,
   MessageCircle,
@@ -8,6 +9,9 @@ import {
   LoaderCircle,
 } from 'lucide-react';
 import '../css/khachhang/ChatAI.css';
+=======
+import '../css/khachhang/ChatAI.css'; // 🌟 Import file CSS vừa tách tại đây
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
 
 const ChatAI = ({ customerId = null }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +41,11 @@ const ChatAI = ({ customerId = null }) => {
     if (!inputValue.trim()) return;
 
     const userText = inputValue.trim();
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
     setMessages((prev) => [...prev, { sender: 'customer', text: userText, timestamp: new Date() }]);
     setInputValue('');
     setIsTyping(true);
@@ -70,7 +78,11 @@ const ChatAI = ({ customerId = null }) => {
       console.error("Lỗi kết nối API Chatbox:", error);
       setMessages((prev) => [...prev, {
         sender: 'ai',
+<<<<<<< HEAD
         text: 'Trợ lý ảo của quán đang bận xử lý đơn hàng một chút, bạn vui lòng gửi lại câu hỏi sau vài giây nhé!'
+=======
+        text: '⚠️ Trợ lý ảo của quán đang bận xử lý đơn hàng một chút, bạn vui lòng gửi lại câu hỏi sau vài giây nhé!'
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
       }]);
     } finally {
       setIsTyping(false);
@@ -81,6 +93,7 @@ const ChatAI = ({ customerId = null }) => {
     <div className="chatai-wrapper">
       {/* 🔮 NÚT BONG BÓNG TRÒ CHUYỆN */}
       <button onClick={() => setIsOpen(!isOpen)} className="chatai-floating-button">
+<<<<<<< HEAD
         {isOpen ? (
           <>
             <X size={18} />
@@ -92,6 +105,9 @@ const ChatAI = ({ customerId = null }) => {
             Trợ lý Trà Sữa AI
           </>
         )}
+=======
+        {isOpen ? '✖ Đóng Chat' : '💬 Trợ lý Trà Sữa AI'}
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
       </button>
 
       {/* 📜 KHUNG GIAO DIỆN HỘP CHAT CHÍNH */}
@@ -99,6 +115,7 @@ const ChatAI = ({ customerId = null }) => {
         <div className="chatai-window">
           {/* Thanh Header Hộp Chat */}
           <div className="chatai-header">
+<<<<<<< HEAD
             <div className="chatai-header-title">
               <Bot size={18} />
               Trợ Lý Quán Trà Sữa AI
@@ -106,24 +123,37 @@ const ChatAI = ({ customerId = null }) => {
             <div className="chatai-header-subtitle">
               Tư vấn thực đơn và topping tự động
             </div>
+=======
+            <div className="chatai-header-title">🤖 Trợ Lý Quán Trà Sữa AI</div>
+            <div className="chatai-header-subtitle">Tư vấn Thực Đơn & Topping tự động</div>
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
           </div>
 
           {/* Vùng Nội Dung Hiển Thị Tin Nhắn */}
           <div className="chatai-message-container">
             {messages.length === 0 && (
               <div className="chatai-welcome-text">
+<<<<<<< HEAD
                 <Sparkles size={18} />
                 <span>
                   Xin chào! Mình là trợ lý ảo AI. Bạn cần hỏi về các món nước, giá tiền hoặc topping đi kèm thì nhắn mình tư vấn.
                 </span>
+=======
+                Xin chào! Mình là trợ lý ảo AI. Bạn cần hỏi về các món nước, giá tiền, hoặc topping đi kèm của quán cứ nhắn mình tư vấn nhé! ❤️
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
               </div>
             )}
 
             {messages.map((msg, index) => {
               const isCustomer = msg.sender === 'customer';
               return (
+<<<<<<< HEAD
                 <div
                   key={index}
+=======
+                <div 
+                  key={index} 
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
                   className={`chatai-message-row ${isCustomer ? 'customer' : 'ai'}`}
                 >
                   <div className={`chatai-bubble ${isCustomer ? 'customer' : 'ai'}`}>
@@ -137,8 +167,12 @@ const ChatAI = ({ customerId = null }) => {
             {isTyping && (
               <div className="chatai-message-row ai">
                 <div className="chatai-bubble typing">
+<<<<<<< HEAD
                   <LoaderCircle size={15} className="chatai-spin" />
                   Trợ lý AI đang gõ phản hồi...
+=======
+                  🤖 Trợ lý AI đang gõ phản hồi...
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
                 </div>
               </div>
             )}
@@ -155,6 +189,7 @@ const ChatAI = ({ customerId = null }) => {
               className="chatai-input"
               disabled={isTyping}
             />
+<<<<<<< HEAD
             <button
               type="submit"
               className="chatai-btn-send"
@@ -162,6 +197,14 @@ const ChatAI = ({ customerId = null }) => {
               aria-label="Gửi tin nhắn"
             >
               <Send size={16} />
+=======
+            <button 
+              type="submit" 
+              className="chatai-btn-send" 
+              disabled={isTyping || !inputValue.trim()}
+            >
+              Gửi
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
             </button>
           </form>
         </div>

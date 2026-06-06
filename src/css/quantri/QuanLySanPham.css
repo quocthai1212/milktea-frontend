@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .qlsp-container { width: 100%; box-sizing: border-box; }
 .qlsp-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
 .qlsp-main-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; }
@@ -169,3 +170,463 @@
   border-radius: 4px;
   border: 1px solid #bae6fd;
 }
+=======
+/* ==========================================================================
+   🎨 FILE: QuanLySanPham.css
+   Giao diện quản lý sản phẩm & topping - Đồng bộ hệ thống Admin Dashboard
+   ========================================================================== */
+
+   .qlsp-container {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  
+  /* Tiêu đề chính trang quản lý */
+  .qlsp-main-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 20px;
+  }
+  
+  /* Thanh thông báo Alert tự chế thả trần */
+  .qlsp-alert {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    animation: slideDownToTop 0.3s ease-out;
+  }
+  
+  /* Thanh đầu bảng điều hướng đóng/mở form và thống kê số lượng */
+  .qlsp-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .qlsp-header-row h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  
+  /* Các nút bấm đóng mở form ở hàng đầu trang */
+  .qlsp-btn-add-new {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .qlsp-btn-add-new:hover { background-color: #059669; }
+  
+  .qlsp-btn-close-form {
+    background-color: #64748b;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .qlsp-btn-close-form:hover { background-color: #475569; }
+  
+  /* Bố cục sắp xếp dạng khối dọc */
+  .qlsp-vertical-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  /* ==========================================================================
+     📝 CẤU TRÚC KHUNG NHẬP LIỆU (FORM CARD)
+     ========================================================================== */
+  .qlsp-form-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+  
+  .qlsp-form-card-title {
+    margin: 0 0 20px 0;
+    color: #059669;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 10px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  
+  /* Hàng ngang form chia tỷ lệ */
+  .qlsp-form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  
+  /* Cụm input dọc */
+  .qlsp-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+  }
+  
+  .qlsp-form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+  
+  /* Ô nhập dữ liệu & Select box đồng bộ */
+  .qlsp-input {
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e293b;
+    outline: none;
+    background-color: #fff;
+    box-sizing: border-box;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+  .qlsp-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+  
+  /* Ô nhập mô tả dài */
+  .qlsp-textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  
+  /* Khối checkbox đóng mở trạng thái món */
+  .qlsp-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0;
+  }
+  .qlsp-checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+  
+  /* ==========================================================================
+     🍡 PHÂN ĐOẠN ĐÍNH KÈM TOPPING CHO LY NƯỚC (TOPPING SECTION)
+     ========================================================================== */
+  .qlsp-topping-section {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .qlsp-topping-section h4 {
+    margin: 0 0 12px 0;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  
+  /* Hàng nhập topping nhanh */
+  .qlsp-topping-row-inputs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  
+  .qlsp-topping-input-width {
+    max-width: 150px;
+  }
+  
+  /* Nút gắn phụ đính kèm */
+  .qlsp-btn-small {
+    background-color: #1e293b;
+    color: white;
+    border: none;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .qlsp-btn-small:hover { background-color: #0f172a; }
+  
+  /* Vùng hiển thị danh sách tag Topping chờ lưu */
+  .qlsp-topping-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .qlsp-topping-empty-text {
+    font-size: 13px;
+    color: #94a3b8;
+    font-style: italic;
+  }
+  
+  /* Thẻ tag Topping mini */
+  .qlsp-topping-tag {
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .qlsp-remove-tag {
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .qlsp-remove-tag:hover { color: #ef4444; }
+  
+  /* Nhóm nút hành động của form lưu/hủy */
+  .qlsp-btn-form-action-group {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+  }
+  
+  .qlsp-btn-primary {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .qlsp-btn-primary:hover { background-color: #2563eb; }
+  
+  .qlsp-btn-secondary {
+    background-color: #cbd5e1;
+    color: #334155;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .qlsp-btn-secondary:hover { background-color: #94a3b8; }
+  
+  
+  /* ==========================================================================
+     📊 BẢNG DỮ LIỆU SẢN PHẨM (TABLE COMPONENT)
+     ========================================================================== */
+  .qlsp-table-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .qlsp-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+    min-width: 900px; /* Duy trì kích thước cột chuẩn cho thực đơn nhiều cột */
+  }
+  
+  .qlsp-table th {
+    background-color: #1e293b;
+    color: #f8fafc;
+    padding: 14px 16px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  
+  .qlsp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: middle;
+  }
+  
+  .qlsp-table tr:hover { background-color: #f8fafc; }
+  
+  /* Ảnh xem trước món ăn tròn nhỏ */
+  .qlsp-img-preview {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    display: block;
+  }
+  
+  /* Kiểu nhãn hiển thị danh mục và trạng thái */
+  .qlsp-badge-category {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .qlsp-badge-status {
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  
+  .qlsp-td-price {
+    font-weight: 700;
+    color: #0f172a;
+  }
+  
+  /* Ô lồng danh sách topping bên trong cột table */
+  .qlsp-table-topping-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 250px;
+  }
+  
+  .qlsp-table-topping-tag {
+    background-color: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    color: #0d9488;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  .qlsp-table-topping-empty {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  
+  /* Các nút bấm thao tác sửa/xóa dòng */
+  .qlsp-btn-edit {
+    background-color: #f59e0b;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 6px;
+    transition: background 0.2s;
+  }
+  .qlsp-btn-edit:hover { background-color: #d97706; }
+  
+  .qlsp-btn-delete {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .qlsp-btn-delete:hover { background-color: #dc2626; }
+  
+  
+  /* ==========================================================================
+     🖼️ CỬA SỔ POP-UP (MODAL XÁC NHẬN XÓA)
+     ========================================================================== */
+  .qlsp-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .qlsp-modal-box {
+    background: white;
+    border-radius: 12px;
+    max-width: 450px;
+    width: 100%;
+    padding: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+  }
+  
+  .qlsp-modal-header {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ef4444;
+    margin-bottom: 12px;
+  }
+  
+  .qlsp-modal-body {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  
+  .qlsp-modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  
+  .qlsp-btn-cancel-delete {
+    padding: 8px 16px;
+    background-color: #cbd5e1;
+    color: #334155;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .qlsp-btn-cancel-delete:hover { background-color: #94a3b8; }
+  
+  .qlsp-btn-confirm-delete {
+    padding: 8px 16px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .qlsp-btn-confirm-delete:hover { background-color: #dc2626; }
+  
+  /* Hiệu ứng mượt mà khi hiện Alert */
+  @keyframes slideDownToTop {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1

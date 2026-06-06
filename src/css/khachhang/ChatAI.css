@@ -162,6 +162,7 @@
   .chatai-btn-send:disabled {
     background-color: #94d3a2;
     cursor: not-allowed;
+<<<<<<< HEAD
   }
   .chatai-header-title,
 .chatai-floating-button,
@@ -194,3 +195,6 @@
     transform: rotate(360deg);
   }
 }
+=======
+  }
+>>>>>>> f8d3b219130c8d20d9bb1484738ae75dba8140c1
