@@ -207,33 +207,52 @@ export default function QuanLyNhanVien() {
             )}
 
             {(modalMode === 'add' || modalMode === 'edit') && (
-              <form onSubmit={handleSubmitForm}>
+              <form onSubmit={handleSubmitForm} autoComplete="off" noValidate>
+                
+                {/* 🚀 BẪY CHROME: Đánh lạc hướng tính năng tự động điền thông tin tài khoản */}
+                <div style={{ position: 'absolute', opacity: 0, zIndex: -1, height: 0, overflow: 'hidden' }}>
+                  <input type="text" name="chrome_fake_user" autoComplete="username" tabIndex="-1" />
+                  <input type="password" name="chrome_fake_pass" autoComplete="current-password" tabIndex="-1" />
+                </div>
+
                 <h3 style={{ margin: '0 0 15px 0', color: '#059669', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>
                   {modalMode === 'add' ? '➕ Thêm Nhân Viên Mới' : '✏️ Chỉnh Sửa Thông Tin'}
                 </h3>
                 
-                {/* 🌟 Đã sửa: Thêm ô nhập Username để tránh lỗi crash trùng giá trị null trong Database của bạn */}
+                {/* TÊN ĐĂNG NHẬP */}
                 <div className="qlnv-form-group">
                   <label className="qlnv-form-label">Tên đăng nhập (Username):</label>
-                  <input 
-                    type="text" 
-                    required 
-                    disabled={modalMode === 'edit'} 
-                    placeholder="Ví dụ: nguyenvana"
-                    value={formData.username} 
-                    onChange={(e) => setFormData({...formData, username: e.target.value})} 
-                    className="qlnv-input" 
-                  />
+                  <div className="auth-input-wrap">
+                    <input 
+                      type="text" 
+                      required 
+                      disabled={modalMode === 'edit'} 
+                      placeholder="Ví dụ: nguyenvana"
+                      value={formData.username} 
+                      autoComplete="new-password"
+                      onChange={(e) => setFormData({...formData, username: e.target.value})} 
+                    />
+                  </div>
                 </div>
 
-                <div className="qlnv-form-row">
+                <div className="qlnv-form-row" style={{ display: 'flex', gap: '12px' }}>
+                  {/* HỌ TÊN */}
                   <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
                     <label className="qlnv-form-label">Họ tên:</label>
-                    <input type="text" required value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} className="qlnv-input" />
+                    <div className="auth-input-wrap">
+                      <input 
+                        type="text" 
+                        required 
+                        value={formData.full_name} 
+                        autoComplete="new-password"
+                        onChange={(e) => setFormData({...formData, full_name: e.target.value})} 
+                      />
+                    </div>
                   </div>
+                  {/* GIỚI TÍNH */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <label className="qlnv-form-label">Giới tính:</label>
-                    <select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="qlnv-input">
+                    <select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="qlnv-input" style={{ height: '44px', borderRadius: '14px' }}>
                       <option value="Nam">Nam</option>
                       <option value="Nữ">Nữ</option>
                       <option value="Khác">Khác</option>
@@ -241,43 +260,92 @@ export default function QuanLyNhanVien() {
                   </div>
                 </div>
 
-                <div className="qlnv-form-row">
+                <div className="qlnv-form-row" style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  {/* NGÀY SINH */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <label className="qlnv-form-label">Ngày sinh:</label>
-                    <input type="date" value={formData.birthday} onChange={(e) => setFormData({...formData, birthday: e.target.value})} className="qlnv-input" />
+                    <div className="auth-input-wrap">
+                      <input 
+                        type="date" 
+                        value={formData.birthday} 
+                        onChange={(e) => setFormData({...formData, birthday: e.target.value})} 
+                      />
+                    </div>
                   </div>
+                  {/* SỐ CCCD */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <label className="qlnv-form-label">Số CCCD:</label>
-                    <input type="text" value={formData.cccd} onChange={(e) => setFormData({...formData, cccd: e.target.value})} className="qlnv-input" />
+                    <div className="auth-input-wrap">
+                      <input 
+                        type="text" 
+                        value={formData.cccd} 
+                        autoComplete="new-password"
+                        onChange={(e) => setFormData({...formData, cccd: e.target.value})} 
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="qlnv-form-group">
+                {/* EMAIL */}
+                <div className="qlnv-form-group" style={{ marginTop: '10px' }}>
                   <label className="qlnv-form-label">Email liên hệ:</label>
-                  <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="qlnv-input" />
+                  <div className="auth-input-wrap">
+                    <input 
+                      type="email" 
+                      required 
+                      value={formData.email} 
+                      autoComplete="new-password"
+                      onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                    />
+                  </div>
                 </div>
 
+                {/* SỐ ĐIỆN THOẠI */}
                 <div className="qlnv-form-group">
                   <label className="qlnv-form-label">Số điện thoại:</label>
-                  <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="qlnv-input" />
+                  <div className="auth-input-wrap">
+                    <input 
+                      type="text" 
+                      value={formData.phone} 
+                      autoComplete="new-password"
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                    />
+                  </div>
                 </div>
 
+                {/* MẬT KHẨU */}
                 <div className="qlnv-form-group">
                   <label className="qlnv-form-label">Mật khẩu {modalMode === 'edit' && '(Bỏ trống nếu giữ nguyên)'}:</label>
-                  <input type="password" required={modalMode === 'add'} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="qlnv-input" />
+                  <div className="auth-input-wrap">
+                    <input 
+                      type="password" 
+                      required={modalMode === 'add'} 
+                      value={formData.password} 
+                      autoComplete="new-password"
+                      onChange={(e) => setFormData({...formData, password: e.target.value})} 
+                    />
+                  </div>
                 </div>
 
+                {/* MỨC LƯƠNG */}
                 <div className="qlnv-form-group">
                   <label className="qlnv-form-label">Mức lương/giờ (đ):</label>
-                  <input type="number" step="1000" value={formData.base_salary} onChange={(e) => setFormData({...formData, base_salary: Number(e.target.value)})} className="qlnv-input" />
+                  <div className="auth-input-wrap">
+                    <input 
+                      type="number" 
+                      step="1000" 
+                      value={formData.base_salary} 
+                      onChange={(e) => setFormData({...formData, base_salary: Number(e.target.value)})} 
+                    />
+                  </div>
                 </div>
 
-                <div className="qlnv-checkbox-group">
+                <div className="qlnv-checkbox-group" style={{ marginTop: '12px' }}>
                   <input type="checkbox" id="is_active" checked={formData.is_active} onChange={(e) => setFormData({...formData, is_active: e.target.checked})} /> 
                   <label htmlFor="is_active" style={{fontWeight: 'bold', color: '#1e293b', cursor: 'pointer'}}>Kích hoạt trạng thái hoạt động</label>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '15px' }}>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
                   <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: '10px 16px', background: '#cbd5e1', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#334155', fontWeight: '600' }}>Hủy bỏ</button>
                   <button type="submit" style={{ padding: '10px 16px', background: '#10b981', border: 'none', borderRadius: '6px', cursor: 'pointer', color: 'white', fontWeight: '600' }}>Lưu thông tin</button>
                 </div>

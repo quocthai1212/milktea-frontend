@@ -1,5 +1,11 @@
 /* 🎨 GIAO DIỆN HỘP CHAT TRỢ LÝ AI */
-
+/* Bản tối giản siêu ngắn (Chỉ 1 dòng selector) */
+.auth-input-wrap input:-webkit-autofill {
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #333333 !important;
+  transition: background-color 50000s ease-in-out 0s !important;
+}
 .chatai-wrapper {
     position: fixed;
     bottom: 30px;

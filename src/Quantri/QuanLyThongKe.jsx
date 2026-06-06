@@ -23,7 +23,7 @@ const QuanLyThongKe = () => {
       const result = await response.json();
       
       if (result.success) {
-        setDataThongKe(result.data);
+        setDataThongKe(result.data || []);
       } else {
         console.error(result.message);
         setDataThongKe([]);
@@ -41,9 +41,17 @@ const QuanLyThongKe = () => {
   }, [tabHienTai, loaiThoiGian]);
 
   const tinhTongDoanhThu = () => {
-    if (tabHienTai === 'khachhang') return dataThongKe.reduce((sum, item) => sum + item.tongTienChiTieu, 0);
-    if (tabHienTai === 'mathang') return dataThongKe.reduce((sum, item) => sum + item.tongDoanhThuMon, 0);
-    if (tabHienTai === 'thoigian') return dataThongKe.reduce((sum, item) => sum + item.doanhThu, 0);
+    if (!dataThongKe || dataThongKe.length === 0) return 0;
+    
+    if (tabHienTai === 'khachhang') {
+      return dataThongKe.reduce((sum, item) => sum + (item.tongTienChiTieu || 0), 0);
+    }
+    if (tabHienTai === 'mathang') {
+      return dataThongKe.reduce((sum, item) => sum + (item.tongDoanhThuMon || 0), 0);
+    }
+    if (tabHienTai === 'thoigian') {
+      return dataThongKe.reduce((sum, item) => sum + (item.doanhThu || 0), 0);
+    }
     return 0;
   };
 
@@ -63,6 +71,7 @@ const QuanLyThongKe = () => {
       {/* TABS CHỨC NĂNG CHÍNH */}
       <div className="tk-tabs-row">
         <button 
+          type="button"
           className={`tk-tab-btn ${tabHienTai === 'khachhang' ? 'active' : ''}`}
           onClick={() => setTabHienTai('khachhang')}
         >
@@ -70,6 +79,7 @@ const QuanLyThongKe = () => {
         </button>
         
         <button 
+          type="button"
           className={`tk-tab-btn ${tabHienTai === 'mathang' ? 'active' : ''}`}
           onClick={() => setTabHienTai('mathang')}
         >
@@ -77,6 +87,7 @@ const QuanLyThongKe = () => {
         </button>
         
         <button 
+          type="button"
           className={`tk-tab-btn ${tabHienTai === 'thoigian' ? 'active' : ''}`}
           onClick={() => setTabHienTai('thoigian')}
         >
@@ -91,6 +102,7 @@ const QuanLyThongKe = () => {
           {['thang', 'quy', 'nam'].map((kieu) => (
             <button
               key={kieu}
+              type="button"
               onClick={() => setLoaiThoiGian(kieu)}
               className={`tk-filter-btn ${loaiThoiGian === kieu ? 'active' : ''}`}
             >
@@ -112,8 +124,8 @@ const QuanLyThongKe = () => {
       {/* BẢNG DỮ LIỆU HIỂN THỊ */}
       <div className="tk-table-wrapper">
         {loading ? (
-          <div className="tk-status-message">Đang tính toán và tải báo cáo từ database thực tế...</div>
-        ) : dataThongKe.length === 0 ? (
+          <div className="tk-status-message">🔄 Đang tính toán và tải báo cáo từ database thực tế...</div>
+        ) : !dataThongKe || dataThongKe.length === 0 ? (
           <div className="tk-status-message">Chưa có dữ liệu đơn hàng hoàn thành (completed) cho mục này.</div>
         ) : (
           <table className="tk-table">
@@ -152,30 +164,30 @@ const QuanLyThongKe = () => {
                   {/* Dữ liệu Tab Khách Hàng */}
                   {tabHienTai === 'khachhang' && (
                     <>
-                      <td><span className="text-bold">{item.full_name}</span></td>
-                      <td>{item.phone || 'Chưa cập nhật'}</td>
-                      <td className="text-muted">{item.email}</td>
-                      <td className="text-center text-bold">{item.tongSoDonHang} đơn</td>
-                      <td className="text-success">{item.tongTienChiTieu.toLocaleString('vi-VN')} đ</td>
+                      <td><span className="text-bold">{item?.full_name || 'Khách vãng lai'}</span></td>
+                      <td>{item?.phone || 'Chưa cập nhật'}</td>
+                      <td className="text-muted">{item?.email || 'N/A'}</td>
+                      <td className="text-center text-bold">{item?.tongSoDonHang || 0} đơn</td>
+                      <td className="text-success">{(item?.tongTienChiTieu || 0).toLocaleString('vi-VN')} đ</td>
                     </>
                   )}
 
                   {/* Dữ liệu Tab Mặt Hàng */}
                   {tabHienTai === 'mathang' && (
                     <>
-                      <td><span className="text-bold">{item._id}</span></td>
-                      <td className="text-center text-primary">{item.tongSoLuongBan} ly</td>
-                      <td className="text-success">{item.tongDoanhThuMon.toLocaleString('vi-VN')} đ</td>
+                      <td><span className="text-bold">{item?._id || 'Sản phẩm ẩn'}</span></td>
+                      <td className="text-center text-primary">{item?.tongSoLuongBan || 0} ly</td>
+                      <td className="text-success">{(item?.tongDoanhThuMon || 0).toLocaleString('vi-VN')} đ</td>
                     </>
                   )}
 
                   {/* Dữ liệu Tab Thời Gian */}
                   {tabHienTai === 'thoigian' && (
                     <>
-                      <td><span className="text-bold">{item.thoiGian}</span></td>
-                      <td className="text-center">{item.tongDonHang} đơn</td>
-                      <td className="text-muted">+{item.tongTienGiaoHang.toLocaleString('vi-VN')} đ</td>
-                      <td className="text-success">{item.doanhThu.toLocaleString('vi-VN')} đ</td>
+                      <td><span className="text-bold">{item?.thoiGian || 'Không rõ'}</span></td>
+                      <td className="text-center">{item?.tongDonHang || 0} đơn</td>
+                      <td className="text-muted">+{ (item?.tongTienGiaoHang || 0).toLocaleString('vi-VN')} đ</td>
+                      <td className="text-success">{(item?.doanhThu || 0).toLocaleString('vi-VN')} đ</td>
                     </>
                   )}
 

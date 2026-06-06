@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         <div className="sidebar-overlay" onClick={() => setIsMobileOpen(false)}></div>
       )}
 
-      {/* 🧭 SIDEBAR BIÊN TRÁI (CHỈ CÓ 3 MỤC CHÍNH) */}
+      {/* 🧭 SIDEBAR BIÊN TRÁI */}
       <div className={`admin-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo">
           <h3>ADMIN MILKTEA</h3>
@@ -75,7 +75,15 @@ export default function AdminDashboard() {
             onClick={() => handleTabChange('khuyenmai')} 
             className={`admin-menu-item ${currentTab === 'khuyenmai' ? 'active' : ''}`}
           >
-            🧋 Quản lý khuyến mãi
+            🏷️ Quản lý khuyến mãi
+          </li>
+          
+          {/* 🌟 ĐÃ BỔ SUNG: Nút chuyển sang Tab Thống kê báo cáo */}
+          <li 
+            onClick={() => handleTabChange('thongke')} 
+            className={`admin-menu-item ${currentTab === 'thongke' ? 'active' : ''}`}
+          >
+            📊 Thống kê doanh thu
           </li>
         </ul>
         
@@ -98,7 +106,7 @@ export default function AdminDashboard() {
 
           {currentTab === 'nhanvien' && <QuanLyNhanVien />}
           
-          {/* 🌟 Tab này sẽ tự kiểm soát việc hiện Danh mục hay Sản phẩm bên trong nó */}
+          {/* Tab này tự kiểm soát việc hiện Danh mục hay Sản phẩm bên trong nó */}
           {currentTab === 'danhmuc' && <QuanLyDanhmuc />}
           
           {currentTab === 'thongke' && <QuanLyThongke />}
