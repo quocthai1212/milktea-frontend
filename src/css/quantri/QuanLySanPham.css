@@ -21,6 +21,25 @@
   font-size: 14px;
 }
 
+/* --- BỔ SUNG ĐỂ DIỆT TẬN GỐC VIỀN ĐEN AUTOFILL TRÊN HOST --- */
+
+/* 1. Đập tan cái viền đen cứng đầu của thẻ input khi Chrome tự điền */
+.auth-input-wrap input:-webkit-autofill {
+  border: none !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important; /* Ép cái lớp ẩn của Chrome phải thành màu trắng */
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #333333 !important; /* Giữ màu chữ giống CSS cũ của bạn */
+}
+
+/* 2. Chặn đứng trường hợp khi hover chuột hoặc click vào ô (focus) mà Chrome đổi lại màu đen */
+.auth-input-wrap input:-webkit-autofill:hover, 
+.auth-input-wrap input:-webkit-autofill:focus, 
+.auth-input-wrap input:-webkit-autofill:active {
+  border: none !important;
+  outline: none !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+}
 /* Đóng băng hiệu ứng chuyển màu nền mặc định của trình duyệt */
 .auth-input-wrap input:-webkit-autofill {
   transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s !important;
