@@ -315,8 +315,8 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                           {tp.topping_name} (+{tp.price}đ)
                         </button>
                       ))}
-                    </div>
                   </div>
+                </div>
                 )}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
