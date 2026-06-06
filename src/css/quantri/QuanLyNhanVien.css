@@ -1,0 +1,253 @@
+/* ==========================================================================
+   🎨 FILE: QuanLyNhanVien.css
+   Giao diện quản lý nhân viên - Khóa khung, chống tràn và tự co giãn tỷ lệ
+   ========================================================================== */
+
+   .qlnv-container {
+    width: 100%;
+    padding: 10px;
+  }
+  
+  /* Tiêu đề chính chỉnh lớn, đậm đà */
+  .qlnv-main-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 20px;
+  }
+  
+  /* Thanh đầu bảng chứa tổng số lượng và nút thêm mới */
+  .qlnv-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  /* Nút thêm nhân viên mới (Màu xanh lá thương hiệu) */
+  .qlnv-btn-add-new {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .qlnv-btn-add-new:hover {
+    background-color: #059669;
+  }
+  
+  /* ==========================================================================
+     📊 BẢNG DỮ LIỆU NHÂN VIÊN (TABLE COMPONENT)
+     ========================================================================== */
+  
+  /* Thẻ Card bọc ngoài bảng để đổ bóng và bo góc */
+  .qlnv-table-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  /* 🌟 CỐT LÕI: Bộ bọc chống tràn lề, tự sinh thanh cuộn ngang khi thu nhỏ */
+  .qlnv-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch; /* Vuốt mượt trên iOS Safari */
+  }
+  
+  .qlnv-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+    min-width: 650px; /* Ép bảng giữ khoảng cách tối thiểu, không bị bóp teo chữ */
+  }
+  
+  /* Tiêu đề cột */
+  .qlnv-table th {
+    background-color: #1e293b;
+    color: #f8fafc;
+    padding: 14px 16px;
+    font-weight: 600;
+  }
+  
+  /* Các ô nội dung */
+  .qlnv-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: middle;
+  }
+  
+  /* Hiệu ứng di chuột sáng dòng */
+  .qlnv-table tr:hover {
+    background-color: #f8fafc;
+  }
+  
+  /* Huy hiệu hiển thị ngày công lọt lòng */
+  .qlnv-badge-attendance {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  
+  /* ==========================================================================
+     🎛️ HÀNH ĐỘNG: NHÓM NÚT BẤM TRONG BẢNG (Chi tiết, Sửa, Xóa)
+     ========================================================================== */
+  .qlnv-btn-view {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .qlnv-btn-edit {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .qlnv-btn-delete {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .qlnv-btn-view:hover { background: #2563eb; }
+  .qlnv-btn-edit:hover { background: #d97706; }
+  .qlnv-btn-delete:hover { background: #dc2626; }
+  
+  /* ==========================================================================
+     🖼️ CỬA SỔ POP-UP (MODAL XEM / THÊM / SỬA)
+     ========================================================================== */
+  
+  /* Lớp phủ mờ toàn bộ màn hình phía sau */
+  .qlnv-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px); /* Làm mờ hậu cảnh cao cấp */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+  }
+  
+  /* Hộp thoại Modal trung tâm */
+  .qlnv-modal-box-custom {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 550px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    max-height: 90vh; /* Không vượt quá 90% chiều cao màn hình */
+    overflow-y: auto; /* Tự sinh thanh cuộn dọc lọt lòng nếu form quá dài */
+  }
+  
+  /* Nút X đóng nhanh modal */
+  .qlnv-close-modal-x {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s;
+  }
+  
+  .qlnv-close-modal-x:hover {
+    color: #334155;
+  }
+  
+  /* ==========================================================================
+     📝 CẤU TRÚC PHÂN CHIA FORM NHẬP LIỆU
+     ========================================================================== */
+  
+  /* Hàng ngang chứa nhiều ô nhập (ví dụ: Họ tên + Giới tính) */
+  .qlnv-form-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  
+  /* Khối dọc gồm nhãn và ô input */
+  .qlnv-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+  }
+  
+  /* Dòng chữ tiêu đề nhỏ trên mỗi ô nhập */
+  .qlnv-form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+  }
+  
+  /* Ô nhập liệu chuẩn hóa */
+  .qlnv-input {
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1e293b;
+    outline: none;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  
+  /* Hiệu ứng khi click chuột vào ô nhập */
+  .qlnv-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+  
+  /* Khối tick chọn Trạng thái hoạt động */
+  .qlnv-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 15px 0;
+  }
+  
+  /* Vùng hiển thị text trong giao diện Xem chi tiết hồ sơ */
+  .qlnv-view-details-body p {
+    font-size: 14px;
+    color: #334155;
+    line-height: 1.6;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed #f1f5f9;
+    padding-bottom: 4px;
+  }

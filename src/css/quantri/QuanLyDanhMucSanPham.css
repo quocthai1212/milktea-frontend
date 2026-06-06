@@ -1,0 +1,384 @@
+/* ==========================================================================
+   🎨 FILE: QuanLyDanhMucSanPham.css
+   Giao diện quản lý danh mục: Tiêu đề nằm giữa, không dùng alert/confirm trình duyệt
+   ========================================================================== */
+
+   .qldm-container {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+  }
+  
+  /* 🔔 KHU VỰC ĐỊNH DẠNG TOAST THÔNG BÁO */
+  .qldm-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 9999;
+    animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  .qldm-toast.success { background-color: #10b981; }
+  .qldm-toast.error { background-color: #ef4444; }
+  
+  @keyframes slideInToast {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  /* Thanh đầu bảng: Căn dọc tâm, bọc linh hoạt khi thu nhỏ */
+  .qldm-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  /* Khối bọc text tiêu đề: Thực hiện căn giữa nội dung giống nhân viên */
+  .qldm-title-block {
+    flex: 1;
+    text-align: center;
+    min-width: 280px;
+  }
+  
+  /* Tiêu đề chính lớn, viết hoa, đậm đà và căn giữa */
+  .qldm-main-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Dòng mô tả phụ nhỏ phía dưới tiêu đề */
+  .qldm-sub-title {
+    color: #64748b;
+    font-size: 13px;
+    margin: 6px 0 0 0;
+  }
+  
+  /* Nút thêm danh mục mới (Màu xanh lá thương hiệu) */
+  .qldm-btn-add-new {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    margin-left: auto; 
+  }
+  
+  .qldm-btn-add-new:hover {
+    background-color: #059669;
+  }
+  
+  /* ==========================================================================
+     📊 BẢNG DỮ LIỆU DANH MỤC (TABLE COMPONENT)
+     ========================================================================== */
+  
+  .qldm-table-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .qldm-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .qldm-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+    min-width: 700px;
+  }
+  
+  .qldm-table th {
+    background-color: #1e293b;
+    color: #f8fafc;
+    padding: 14px 16px;
+    font-weight: 600;
+  }
+  
+  .qldm-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: middle;
+  }
+  
+  .qldm-table tr:hover {
+    background-color: #f8fafc;
+  }
+  
+  .qldm-clickable-name {
+    cursor: pointer;
+    color: #2563eb;
+    font-weight: 700;
+    text-decoration: underline;
+    transition: color 0.2s;
+  }
+  
+  .qldm-clickable-name:hover {
+    color: #1d4ed8;
+  }
+  
+  .qldm-badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  
+  .qldm-badge-status.active {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .qldm-badge-status.hidden-status {
+    background-color: #f1f5f9;
+    color: #475569;
+  }
+  
+  /* ==========================================================================
+     🎛️ HÀNH ĐỘNG: NÚT SỬA / XÓA TRONG BẢNG
+     ========================================================================== */
+  .qldm-btn-edit {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .qldm-btn-delete {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .qldm-btn-edit:hover { background: #d97706; }
+  .qldm-btn-delete:hover { background: #dc2626; }
+  
+  /* ==========================================================================
+     🖼️ CỬA SỔ POP-UP FORM MODAL VÀ CONFIRM BOX
+     ========================================================================== */
+  
+  .qldm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+  }
+  
+  .qldm-modal-box-custom {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Khung phụ trợ cho modal xóa */
+  .qldm-delete-box {
+    max-width: 480px;
+    border-top: 4px solid #ef4444;
+  }
+  
+  .qldm-delete-icon-wrapper {
+    background-color: #fee2e2;
+    padding: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .qldm-close-modal-x {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+  
+  .qldm-close-modal-x:hover {
+    color: #334155;
+  }
+  
+  .qldm-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+  }
+  
+  .qldm-form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+  
+  .qldm-input {
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1e293b;
+    outline: none;
+    width: 100%;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+  
+  .qldm-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+  
+  .qldm-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 10px 0;
+  }
+  
+  /* NÚT TƯƠNG TÁC ĐUÔI FORM */
+  .qldm-btn-cancel {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .qldm-btn-cancel:hover { background-color: #e2e8f0; }
+  
+  .qldm-btn-submit {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .qldm-btn-submit:hover { background-color: #2563eb; }
+  
+  /* Nút đỏ nguy hiểm xác nhận xóa thực sự */
+  .qldm-btn-delete-confirm {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .qldm-btn-delete-confirm:hover { background-color: #dc2626; }
+
+  /* ==========================================================================
+   CSS BỔ SUNG CHO FILE QUANLYDANHMUCSANPHAM.CSS HIỆN TẠI CỦA BẠN
+   ========================================================================== */
+
+.qldm-nested-wrapper {
+    width: 100%;
+    animation: fadeInContainer 0.25s ease-in-out;
+  }
+  
+  /* Nút quay lại bảng danh mục */
+  .qldm-btn-back {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+  }
+  
+  .qldm-btn-back:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+  }
+  
+  /* Biến đổi text danh mục thành dạng link click được */
+  .qldm-clickable-name {
+    color: #2563eb !important;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  
+  .qldm-clickable-name:hover {
+    color: #1d4ed8 !important;
+    text-decoration: underline;
+  }
+  
+  @keyframes fadeInContainer {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }

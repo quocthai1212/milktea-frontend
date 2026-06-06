@@ -1,0 +1,224 @@
+/* --- Tổng quan bộ khung thống kê --- */
+.tk-container {
+    padding: 24px;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+  }
+  
+  /* --- Khu vực Tiêu đề (Header) --- */
+  .tk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 16px;
+  }
+  
+  .tk-title {
+    margin: 0;
+    color: #212529;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 24px;
+  }
+  
+  .tk-btn-refresh {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #495057;
+    transition: all 0.2s ease;
+  }
+  
+  .tk-btn-refresh:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+  }
+  
+  /* --- Thanh Tabs Chuyển đổi chức năng --- */
+  .tk-tabs-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .tk-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid #ced4da;
+    background-color: #ffffff;
+    color: #495057;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+  
+  .tk-tab-btn:hover {
+    background-color: #f1f5f9;
+    color: #1e293b;
+  }
+  
+  .tk-tab-btn.active {
+    background-color: #4f46e5;
+    color: #ffffff;
+    border-color: #4f46e5;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+  }
+  
+  /* --- Bộ lọc phụ (Thời gian) --- */
+  .tk-filter-sub {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background-color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .tk-filter-label {
+    font-weight: 700;
+    color: #495057;
+    font-size: 14px;
+  }
+  
+  .tk-filter-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #ced4da;
+    background-color: #ffffff;
+    color: #495057;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.2s ease;
+  }
+  
+  .tk-filter-btn:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .tk-filter-btn.active {
+    border-color: #4f46e5;
+    background-color: #eeebff;
+    color: #4f46e5;
+  }
+  
+  /* --- Thẻ hiển thị Doanh thu tổng --- */
+  .tk-summary-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  
+  .tk-icon-box {
+    padding: 12px;
+    background-color: #eef2ff;
+    border-radius: 50%;
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .tk-summary-label {
+    document-font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+  }
+  
+  .tk-summary-value {
+    margin: 4px 0 0 0;
+    font-size: 24px;
+    color: #10b981;
+    font-weight: 700;
+  }
+  
+  /* --- Khung hiển thị Bảng (Table) --- */
+  .tk-table-wrapper {
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    overflow-x: auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  
+  .tk-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 700px;
+  }
+  
+  .tk-table thead tr {
+    background-color: #f1f5f9;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  
+  .tk-table th {
+    padding: 14px 16px;
+    font-weight: 600;
+    color: #475569;
+    font-size: 14px;
+  }
+  
+  .tk-table td {
+    padding: 14px 16px;
+    color: #1f2937;
+    font-size: 14px;
+  }
+  
+  .tk-table tbody tr {
+    border-bottom: 1px solid #edf2f7;
+    transition: background-color 0.2s ease;
+  }
+  
+  .tk-table tbody tr:hover {
+    background-color: #f8fafc;
+  }
+  
+  /* --- Trạng thái Loading / Trống --- */
+  .tk-status-message {
+    padding: 40px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 15px;
+  }
+  
+  /* --- Tiện ích văn bản định dạng nhanh --- */
+  .text-center { text-align: center; }
+  .text-bold { font-weight: 700; }
+  .text-success { color: #10b981; font-weight: 700; }
+  .text-primary { color: #4f46e5; font-weight: 700; }
+  .text-muted { color: #6b7280; }
+  
+  /* Hiệu ứng xoay của nút refresh lúc loading */
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }

@@ -1,0 +1,206 @@
+.mdc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 37, 25, 0.75);
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mdc-container {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+  animation: mdcFadeIn 0.25s ease;
+}
+
+@keyframes mdcFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mdc-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: #8c7e74;
+  cursor: pointer;
+}
+
+.mdc-close:hover {
+  color: #e76f51;
+}
+
+.mdc-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  color: #2f2519;
+}
+
+.mdc-subtitle {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #8c7e74;
+  line-height: 1.5;
+}
+
+.mdc-alert-error,
+.mdc-alert-success {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.mdc-alert-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.mdc-alert-success {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.mdc-gps-box {
+  background: #faf7f2;
+  border: 1px solid #eee5d8;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.mdc-gps-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mdc-btn-gps,
+.mdc-btn-manual,
+.mdc-btn-confirm {
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.mdc-btn-gps {
+  padding: 12px 20px;
+  background: #d4a373;
+  color: #2f2519;
+}
+
+.mdc-btn-gps:hover {
+  background: #b8875b;
+}
+
+.mdc-btn-manual {
+  padding: 10px 20px;
+  background: transparent;
+  color: #4a3f35;
+  border: 2px solid #d4a373;
+}
+
+.mdc-btn-manual:hover {
+  background: #fefae0;
+}
+
+.mdc-gps-loading {
+  margin: 0;
+  color: #ea580c;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+}
+
+.mdc-gps-result label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  color: #4a3f35;
+  margin-bottom: 8px;
+}
+
+.mdc-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+}
+
+.mdc-textarea:focus {
+  border-color: #d4a373;
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.25);
+}
+
+.mdc-coords {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.mdc-btn-retry {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #0284c7;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.mdc-btn-confirm {
+  width: 100%;
+  padding: 14px 20px;
+  background: #2a9d8f;
+  color: #fff;
+}
+
+.mdc-btn-confirm:hover:not(:disabled) {
+  background: #238b7f;
+}
+
+.mdc-btn-confirm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* ===== Modern modal refresh ===== */
+.mdh-overlay, .mdc-overlay { background: rgba(17,24,39,.42) !important; backdrop-filter: blur(10px); }
+.mdh-container, .mdc-container { border-radius: 24px !important; border: 1px solid #f1e7dc; box-shadow: 0 24px 70px rgba(17,24,39,.16) !important; }
+.mdh-close, .mdc-close { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; background: #fff7ed !important; color: #9a3412 !important; font-size: 0 !important; }
+.mdh-title, .mdc-title { display: flex; align-items: center; gap: 8px; letter-spacing: -.03em; }
+.mdh-pay-option, .mdc-gps-box { border-color: #f1e7dc !important; background: #fffaf5 !important; }
+.mdh-pay-option { gap: 10px !important; }
+.mdh-pay-option.active { border-color: #fb923c !important; background: #fff7ed !important; }
+.mdh-btn-submit, .mdc-btn-confirm, .mdc-btn-gps, .mdc-btn-manual, .mdc-btn-retry { display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; border-radius: 14px !important; }

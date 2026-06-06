@@ -1,0 +1,106 @@
+.payos-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(212, 163, 115, 0.18), transparent 32%),
+    #faf7f2;
+}
+
+.payos-card {
+  width: min(100%, 460px);
+  background: #fff;
+  border: 1px solid #f1e7dc;
+  border-radius: 18px;
+  padding: 30px 26px;
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(47, 37, 25, 0.12);
+}
+
+.payos-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 18px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payos-icon-ok {
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+.payos-icon-warn {
+  color: #9a3412;
+  background: #fff7ed;
+}
+
+.payos-card h1 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  color: #2f2519;
+}
+
+.payos-card p {
+  margin: 0;
+  color: #6b5a49;
+  line-height: 1.6;
+}
+
+.payos-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.payos-btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.payos-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.payos-btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #d4a373, #b8864f);
+}
+
+.payos-btn-secondary {
+  color: #5c4d3f;
+  background: #fff7ed;
+  border: 1px solid #f1e7dc;
+}
+
+.payos-message {
+  margin-top: 12px !important;
+  color: #b91c1c !important;
+  font-size: 14px;
+}
+
+.payos-spin {
+  animation: payosSpin 0.9s linear infinite;
+}
+
+@keyframes payosSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
