@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { X, Banknote, QrCode, CheckCircle2, LoaderCircle, WalletCards } from 'lucide-react';
+import { X, Banknote, QrCode, CheckCircle2, LoaderCircle, WalletCards, Ticket } from 'lucide-react';
 import { tinhPhiShipClient } from '../utils/tinhPhiShipClient';
 import '../css/khachhang/ModalDatHang.css';
 
-const API_URL = import.meta.env.VITE_API_URL ;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const formatTien = (n) => Number(n || 0).toLocaleString('vi-VN') + 'đ';
 
@@ -24,6 +24,11 @@ const ModalDatHang = ({
   const [thongBao, setThongBao] = useState({ kieu: '', noiDung: '' });
   const [thongTinKhach, setThongTinKhach] = useState(null);
 
+  // --- State phục vụ cho tính năng Danh sách Mã giảm giá từ CSDL ---
+  const [danhSachKhuyenMai, setDanhSachKhuyenMai] = useState([]); // Lưu mảng mã lấy từ DB
+  const [idMaGiamGiaChon, setIdMaGiamGiaChon] = useState(''); // Lưu _id của mã đang chọn trong <select>
+  const [promotionApDung, setPromotionApDung] = useState(null); // Object mã giảm giá hợp lệ cuối cùng
+
   const khachHienThi = thongTinKhach || nguoiDung;
 
   const apDungPhiShip = (data, extraThongBao = null) => {
@@ -43,11 +48,66 @@ const ModalDatHang = ({
     [gioHang]
   );
 
-  const tongThanhToan = tongTienHang + (phiShip?.shipping_fee ?? 0);
+  // Tính số tiền được giảm giá dựa trên mã được áp dụng
+  const soTienGiam = useMemo(() => {
+    if (!promotionApDung) return 0;
+    return Math.min(tongTienHang, promotionApDung.discount_value || 0);
+  }, [promotionApDung, tongTienHang]);
+
+  // Tổng thanh toán cuối cùng
+  const tongThanhToan = Math.max(0, tongTienHang - soTienGiam + (phiShip?.shipping_fee ?? 0));
+
   const tienThoi =
     paymentMethod === 'CASH' && customerCash
       ? Math.max(0, Number(customerCash) - tongThanhToan)
       : 0;
+
+  // 1. Tải danh sách mã giảm giá hợp lệ từ CSDL khi mở modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    fetch(`${API_URL}/api/khachhang/khuyenmai/active`)
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success && Array.isArray(result.data)) {
+          setDanhSachKhuyenMai(result.data);
+        } else {
+          setDanhSachKhuyenMai([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy danh sách khuyến mãi:", err);
+        setDanhSachKhuyenMai([]);
+      });
+  }, [isOpen]);
+
+  // 2. Tự động áp dụng và tính toán lại khi người dùng thay đổi lựa chọn trong thẻ select
+  const handleThayDoiMaGiamGia = (e) => {
+    const selectedId = e.target.value;
+    setIdMaGiamGiaChon(selectedId);
+    
+    // Reset số tiền khách đưa khi đổi mã giảm giá để tránh bug tổng tiền mới lệch với tiền mặt đã nhập
+    setCustomerCash(''); 
+
+    if (!selectedId) {
+      setPromotionApDung(null);
+      setThongBao({ kieu: '', noiDung: '' });
+      return;
+    }
+
+    // Tìm object promotion tương ứng trong danh sách đã tải về
+    const promo = danhSachKhuyenMai.find((item) => item._id === selectedId);
+    if (promo) {
+      setPromotionApDung(promo);
+      setThongBao({ kieu: 'ok', noiDung: `Đã chọn mã: ${promo.code} (Giảm ${formatTien(promo.discount_value)})` });
+    }
+  };
+
+  // Reset số tiền khách đưa khi chuyển đổi qua lại giữa phương thức CASH và PAYOS
+  const handleThayDoiPhuongThucThanhToan = (method) => {
+    setPaymentMethod(method);
+    setCustomerCash('');
+  };
 
   useEffect(() => {
     if (!isOpen || !userId) return;
@@ -71,6 +131,8 @@ const ModalDatHang = ({
     setThongBao({ kieu: '', noiDung: '' });
     setPhiShip(null);
     setThongTinKhach(null);
+    setIdMaGiamGiaChon('');
+    setPromotionApDung(null);
 
     const lat = diaChiGiaoHang?.latitude;
     const lon = diaChiGiaoHang?.longitude;
@@ -163,6 +225,19 @@ const ModalDatHang = ({
       phone: khachHienThi?.phone || '',
     };
 
+    const orderPayloadBase = {
+      order_type: 'online',
+      user_id: userId,
+      items,
+      promotion_code: promotionApDung?._id || null, // Đồng bộ trường promotion_code gửi lên
+      discount_amount: soTienGiam,
+      products_subtotal: tongTienHang,
+      shipping_fee: phiShip?.shipping_fee ?? 0,
+      distance_km: phiShip?.distance_km ?? 0,
+      total_amount: tongThanhToan,
+      delivery,
+    };
+
     try {
       if (paymentMethod === 'PAYOS') {
         setThongBao({ kieu: 'warn', noiDung: 'Đang tạo mã QR thanh toán...' });
@@ -170,24 +245,13 @@ const ModalDatHang = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: userId,
-            delivery,
+            ...orderPayloadBase,
             amount: tongThanhToan,
             description: `MilkTea DH${Date.now().toString().slice(-6)}`,
-            items: items.map((item) => ({
-              name: item.product_name,
-              quantity: item.quantity,
-              price: item.final_unit_price,
-              product_id: item.product_id,
-              product_name: item.product_name,
-              base_price: item.base_price,
-              selected_toppings: item.selected_toppings,
-              final_unit_price: item.final_unit_price,
-              subtotal: item.subtotal,
-            })),
             buyerName: khachHienThi?.full_name || '',
             buyerPhone: khachHienThi?.phone || '',
             buyerEmail: khachHienThi?.email || nguoiDung?.email || '',
+            promotion_code: promotionApDung?._id || null,
           }),
         });
         const payosData = await payosRes.json();
@@ -206,11 +270,10 @@ const ModalDatHang = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: userId,
-          items,
-          payment_method: paymentMethod,
+          ...orderPayloadBase,
+          payment_method: 'CASH',
           customer_cash: Number(customerCash),
-          delivery,
+          promotion_code: promotionApDung?._id || null,
         }),
       });
       const data = await res.json();
@@ -245,6 +308,7 @@ const ModalDatHang = ({
           </div>
         )}
 
+        {/* PHẦN DANH SÁCH MÓN & GIÁ */}
         <section className="mdh-section">
           <h3>Sản phẩm</h3>
           <ul className="mdh-item-list">
@@ -263,10 +327,22 @@ const ModalDatHang = ({
               </li>
             ))}
           </ul>
+          
           <div className="mdh-row">
             <span>Tạm tính hàng</span>
             <strong>{formatTien(tongTienHang)}</strong>
           </div>
+
+          {/* HIỂN THỊ TÊN MÃ VÀ SỐ TIỀN GIẢM */}
+          {promotionApDung && (
+            <div className="mdh-row" style={{ color: '#dc2626' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Ticket size={16} /> Ưu đãi giảm giá ({promotionApDung.code})
+              </span>
+              <strong>-{formatTien(soTienGiam)}</strong>
+            </div>
+          )}
+
           <div className="mdh-row">
             <span>
               Phí giao hàng
@@ -281,12 +357,59 @@ const ModalDatHang = ({
               {loadingPhi ? '...' : formatTien(phiShip?.shipping_fee ?? 0)}
             </strong>
           </div>
+          
           <div className="mdh-row mdh-row-total">
             <span>Tổng thanh toán</span>
-            <strong>{formatTien(tongThanhToan)}</strong>
+            <strong style={{ color: '#4f46e5', fontSize: '1.3rem' }}>{formatTien(tongThanhToan)}</strong>
           </div>
         </section>
 
+        {/* KHU VỰC CHỌN MÃ GIẢM GIÁ TỪ CSDL */}
+        <section className="mdh-section mdh-promo-section" style={{ borderTop: '1px dashed #e2e8f0', paddingTop: '15px' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Ticket size={18} color="#4f46e5" /> Chọn mã khuyến mãi hợp lệ
+          </h3>
+          <div style={{ marginTop: '8px' }}>
+            <select
+              value={idMaGiamGiaChon}
+              onChange={handleThayDoiMaGiamGia}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '0.95rem',
+                backgroundColor: '#fff',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="">-- Bấm vào đây để chọn mã giảm giá --</option>
+              {danhSachKhuyenMai.map((item) => (
+                <option key={item._id} value={item._id}>
+                  {item.code} [Giảm {formatTien(item.discount_value)}]
+                </option>
+              ))}
+            </select>
+
+            {/* HIỂN THỊ TÊN MÔ TẢ CHI TIẾT CỦA MÃ KHUYẾN MÃI ĐANG CHỌN */}
+            {promotionApDung && promotionApDung.description && (
+              <div style={{ 
+                marginTop: '8px', 
+                padding: '8px 12px', 
+                backgroundColor: '#f8fafc', 
+                borderLeft: '4px solid #4f46e5',
+                borderRadius: '4px',
+                fontSize: '0.88rem',
+                color: '#475569'
+              }}>
+                <strong>Mô tả:</strong> {promotionApDung.description}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ĐỊA CHỈ NHẬN HÀNG */}
         <section className="mdh-section">
           <h3>Địa chỉ nhận hàng</h3>
           <div className="mdh-info-box">
@@ -302,6 +425,7 @@ const ModalDatHang = ({
           </div>
         </section>
 
+        {/* PHƯƠNG THỨC THANH TOÁN */}
         <section className="mdh-section">
           <h3>Phương thức thanh toán</h3>
           <label className={`mdh-pay-option ${paymentMethod === 'CASH' ? 'active' : ''}`}>
@@ -309,7 +433,7 @@ const ModalDatHang = ({
               type="radio"
               name="payment"
               checked={paymentMethod === 'CASH'}
-              onChange={() => setPaymentMethod('CASH')}
+              onChange={() => handleThayDoiPhuongThucThanhToan('CASH')}
             />
             <Banknote size={18} /> Thanh toán khi nhận hàng (COD)
           </label>
@@ -318,7 +442,7 @@ const ModalDatHang = ({
               type="radio"
               name="payment"
               checked={paymentMethod === 'PAYOS'}
-              onChange={() => setPaymentMethod('PAYOS')}
+              onChange={() => handleThayDoiPhuongThucThanhToan('PAYOS')}
             />
             <QrCode size={18} /> Thanh toán QR payOS
           </label>
