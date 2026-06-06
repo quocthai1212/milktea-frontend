@@ -95,7 +95,7 @@ const QuanLyDanhMucSanPham = () => {
     return (
       <div className="qldm-nested-wrapper">
         <button className="qldm-btn-back" onClick={() => setViewMode('list')}>
-          <span style={{ marginRight: '6px' }}>←</span> Quay lại danh mục
+          <ArrowLeft size={16} style={{ marginRight: '6px' }} /> Quay lại danh mục
         </button>
         
         {/* TRUYỀN THÊM danhSachDM XUỐNG ĐỂ CON ĐỌC TÊN BADGE DANH MỤC */}
@@ -137,19 +137,50 @@ const QuanLyDanhMucSanPham = () => {
             <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700' }}>
               {dangSuaId ? '✏️ CẬP NHẬT DANH MỤC' : '➕ THÊM DANH MỤC MỚI'}
             </h3>
-            <form onSubmit={handleSaveCategory}>
+            <form onSubmit={handleSaveCategory} autoComplete="off" noValidate>
+              
+              {/* 🚀 BẪY CHROME: Ngăn chặn tự động điền thông tin đăng nhập */}
+              <div style={{ position: 'absolute', opacity: 0, zIndex: -1, height: 0, overflow: 'hidden' }}>
+                <input type="text" name="chrome_fake_user" autoComplete="username" tabIndex="-1" />
+                <input type="password" name="chrome_fake_pass" autoComplete="current-password" tabIndex="-1" />
+              </div>
+
+              {/* Ô TÊN DANH MỤC ĐƯỢC BỌC LỚP BẢO VỆ */}
               <div className="qldm-form-group">
                 <label className="qldm-form-label">Tên danh mục *</label>
-                <input type="text" name="category_name" value={formData.category_name} onChange={handleInputChange} required className="qldm-input" />
+                <div className="auth-input-wrap">
+                  <input 
+                    type="text" 
+                    name="category_name" 
+                    value={formData.category_name} 
+                    onChange={handleInputChange} 
+                    required 
+                    autoComplete="new-password"
+                    placeholder="VD: Trà Sữa, Cà Phê, Trà Trái Cây..."
+                  />
+                </div>
               </div>
+
+              {/* Ô MÔ TẢ ĐƯỢC BỌC LỚP BẢO VỆ */}
               <div className="qldm-form-group">
                 <label className="qldm-form-label">Mô tả ngắn</label>
-                <input type="text" name="description" value={formData.description} onChange={handleInputChange} className="qldm-input" />
+                <div className="auth-input-wrap">
+                  <input 
+                    type="text" 
+                    name="description" 
+                    value={formData.description} 
+                    onChange={handleInputChange} 
+                    autoComplete="new-password"
+                    placeholder="Ghi chú hiển thị kèm theo nhóm..."
+                  />
+                </div>
               </div>
+
               <div className="qldm-checkbox-group">
                 <input type="checkbox" id="is_active" name="is_active" checked={formData.is_active} onChange={handleInputChange} />
                 <label htmlFor="is_active" className="qldm-form-label" style={{ margin: 0, cursor: 'pointer' }}>Hiển thị công khai</label>
               </div>
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
                 <button type="button" className="qldm-btn-cancel" onClick={() => setHienForm(false)}>Hủy</button>
                 <button type="submit" className="qldm-btn-submit">Lưu cấu hình</button>
@@ -174,30 +205,38 @@ const QuanLyDanhMucSanPham = () => {
                 </tr>
               </thead>
               <tbody>
-                {danhSachDM.map((dm) => (
-                  <tr key={dm._id}>
-                    {/* 🌟 TEXT CÓ THỂ CLICK ĐỂ XEM SẢN PHẨM CON */}
-                    <td className="qldm-clickable-name" onClick={() => handleCategoryClick(dm._id, dm.category_name)}>
-                      📁 {dm.category_name}
-                    </td>
-                    <td>{dm.description || <em style={{ color: '#94a3b8' }}>Chưa có mô tả</em>}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className={`qldm-badge-status ${dm.is_active ? 'active' : 'hidden-status'}`}>
-                        {dm.is_active ? 'Đang hoạt động' : 'Đang ẩn'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button onClick={() => handleEditClick(dm)} className="qldm-btn-edit" style={{ marginRight: '8px' }}>Sửa</button>
-                      <button onClick={() => { setDmCanXoa({ id: dm._id, name: dm.category_name }); setMoXoaModal(true); }} className="qldm-btn-delete">Xóa</button>
+                {danhSachDM.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+                      Chưa có danh mục sản phẩm nào trên hệ thống.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  danhSachDM.map((dm) => (
+                    <tr key={dm._id}>
+                      <td className="qldm-clickable-name" onClick={() => handleCategoryClick(dm._id, dm.category_name)}>
+                        📁 {dm.category_name}
+                      </td>
+                      <td>{dm.description || <em style={{ color: '#94a3b8' }}>Chưa có mô tả</em>}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span className={`qldm-badge-status ${dm.is_active ? 'active' : 'hidden-status'}`}>
+                          {dm.is_active ? 'Đang hoạt động' : 'Đang ẩn'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button onClick={() => handleEditClick(dm)} className="qldm-btn-edit" style={{ marginRight: '8px' }}>Sửa</button>
+                        <button onClick={() => { setDmCanXoa({ id: dm._id, name: dm.category_name }); setMoXoaModal(true); }} className="qldm-btn-delete">Xóa</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
+      {/* MODAL XÓA CÓ BẮT LỖI MẠNG AN TOÀN */}
       {moXoaModal && (
         <div className="qldm-modal-overlay">
           <div className="qldm-modal-box-custom qldm-delete-box">
@@ -205,15 +244,26 @@ const QuanLyDanhMucSanPham = () => {
               <div className="qldm-delete-icon-wrapper"><AlertTriangle size={22} color="#ef4444" /></div>
               <div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '16px' }}>Xác Nhận Xóa?</h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Bạn có chắc muốn xóa danh mục <strong>"{dmCanXoa?.name}"</strong>?</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Bạn có chắc muốn xóa danh mục <strong>"{dmCanXoa?.name}"</strong>? Hành động này không thể hoàn tác.</p>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
               <button className="qldm-btn-cancel" onClick={() => setMoXoaModal(false)}>Hủy</button>
               <button className="qldm-btn-delete-confirm" onClick={async () => {
-                await fetch(`${API_URL}/api/quantri/danhmuc/delete/${dmCanXoa.id}`, { method: 'DELETE' });
-                setMoXoaModal(false);
-                taiDanhSach();
+                try {
+                  const res = await fetch(`${API_URL}/api/quantri/danhmuc/delete/${dmCanXoa.id}`, { method: 'DELETE' });
+                  const data = await res.json();
+                  if (data.success) {
+                    showToast('Xóa danh mục sản phẩm thành công!', 'success');
+                  } else {
+                    showToast(data.message || 'Lỗi khi xóa danh mục!', 'error');
+                  }
+                } catch (err) {
+                  showToast('Lỗi kết nối máy chủ!', 'error');
+                } finally {
+                  setMoXoaModal(false);
+                  taiDanhSach();
+                }
               }}>Xóa xuôi</button>
             </div>
           </div>
