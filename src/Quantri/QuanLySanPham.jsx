@@ -10,7 +10,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
   const [moXoaModal, setMoXoaModal] = useState(false);
   const [spCanXoa, setSpCanXoa] = useState(null); 
 
-  // 🌟 Đồng bộ cấu trúc formData: Bổ sung mảng toppings và sizes trống mặc định
   const [formData, setFormData] = useState({
     product_name: '', 
     base_price: '', 
@@ -56,7 +55,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     }
   };
 
-  // ⚡ Tự động gom danh sách Topping độc bản từ các sản phẩm khác để chọn nhanh
   const layToppingDaCoSan = () => {
     const tatCaToppings = [];
     const checkGiaTriTrung = new Set();
@@ -85,7 +83,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
-  // ================= LOGIC XỬ LÝ SỰ KIỆN TOPPING ĐỘNG =================
   const handleAddToppingRow = () => {
     setFormData({
       ...formData,
@@ -115,7 +112,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     });
   };
 
-  // ================= LOGIC XỬ LÝ SỰ KIỆN SIZE ĐỘNG =================
   const handleAddSizeRow = () => {
     setFormData({
       ...formData,
@@ -133,13 +129,11 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     setFormData({ ...formData, sizes: updated });
   };
 
-  // ================= LƯU SẢN PHẨM (POST / PUT) =================
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     const url = dangSuaId ? `${API_URL}/api/quantri/qt_sanpham/update/${dangSuaId}` : `${API_URL}/api/quantri/qt_sanpham/add`;
     const method = dangSuaId ? 'PUT' : 'POST';
 
-    // Chuẩn hóa định dạng số cho mảng trước khi gửi lên API
     const toppingsChuanHoa = formData.toppings.map(t => ({ ...t, price: Number(t.price) || 0 }));
     const sizesChuanHoa = formData.sizes.map(s => ({ ...s, extra_price: Number(s.extra_price) || 0 }));
 
@@ -211,28 +205,42 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
         </button>
       </div>
 
-      {/* 🌟 FORM ĐƯỢC THIẾT KẾ LẠI RỘNG RÃI, CÓ SCROLL CHỐNG TRÀN */}
       {hienForm && (
         <div className="qlsp-modal-overlay">
           <div className="qlsp-modal-box-custom" style={{ maxWidth: '650px', width: '90%', maxHeight: '90vh', overflowY: 'auto', padding: '24px' }}>
             <span className="qlsp-close-modal-x" onClick={() => setHienForm(false)}>&times;</span>
             <h3 className="qlsp-modal-form-title">{dangSuaId ? '✏️ CHỈNH SỬA SẢN PHẨM' : '➕ THÊM SẢN PHẨM MỚI'}</h3>
-            <form onSubmit={handleSaveProduct}>
+            
+            {/* 🛠️ BỔ SUNG: Chặn tính năng autocomplete từ phía Form */}
+            <form onSubmit={handleSaveProduct} autoComplete="off">
+              
+              {/* 🛠️ THAY ĐỔI: Bọc các thẻ input vào lớp bọc ảo .auth-input-wrap */}
               <div className="qlsp-form-group">
                 <label className="qlsp-form-label">Tên sản phẩm *</label>
-                <input type="text" name="product_name" value={formData.product_name} onChange={handleInputChange} required className="qlsp-input" />
+                <div className="auth-input-wrap">
+                  <input type="text" name="sp_txt_title" value={formData.product_name} onChange={(e) => setFormData({...formData, product_name: e.target.value})} required className="qlsp-input" />
+                </div>
               </div>
+
               <div className="qlsp-form-group">
                 <label className="qlsp-form-label">Giá bán gốc (đ) *</label>
-                <input type="number" name="base_price" value={formData.base_price} onChange={handleInputChange} required className="qlsp-input" />
+                <div className="auth-input-wrap">
+                  <input type="number" name="sp_num_baseprice" value={formData.base_price} onChange={(e) => setFormData({...formData, base_price: e.target.value})} required className="qlsp-input" />
+                </div>
               </div>
+
               <div className="qlsp-form-group">
                 <label className="qlsp-form-label">Đường dẫn ảnh (URL)</label>
-                <input type="text" name="image" value={formData.image} onChange={handleInputChange} className="qlsp-input" />
+                <div className="auth-input-wrap">
+                  <input type="text" name="sp_txt_imgurl" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} className="qlsp-input" />
+                </div>
               </div>
+
               <div className="qlsp-form-group">
                 <label className="qlsp-form-label">Mô tả món ăn</label>
-                <input type="text" name="description" value={formData.description} onChange={handleInputChange} className="qlsp-input" />
+                <div className="auth-input-wrap">
+                  <input type="text" name="sp_txt_desc" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="qlsp-input" />
+                </div>
               </div>
 
               {/* ================= 📐 KHU VỰC 1: CẤU HÌNH KÍCH THƯỚC LY (SIZES) ================= */}
@@ -256,26 +264,30 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {formData.sizes.map((sz, idx) => (
                       <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        <input 
-                          type="text" 
-                          placeholder="Tên Size (VD: M, L, XL, Ly 700ml...)" 
-                          value={sz.size_name} 
-                          onChange={(e) => handleSizeInputChange(idx, 'size_name', e.target.value)}
-                          required
-                          style={{ flex: 2, padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#fff' }}
-                        />
-                        <input 
-                          type="number" 
-                          placeholder="Giá cộng thêm (đ)" 
-                          value={sz.extra_price} 
-                          onChange={(e) => handleSizeInputChange(idx, 'extra_price', e.target.value)}
-                          required
-                          style={{ flex: 1, padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#fff' }}
-                        />
+                        <div className="auth-input-wrap" style={{ flex: 2 }}>
+                          <input 
+                            type="text" 
+                            name={`sz_name_${idx}`}
+                            placeholder="Tên Size (VD: M, L...)" 
+                            value={sz.size_name} 
+                            onChange={(e) => handleSizeInputChange(idx, 'size_name', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="auth-input-wrap" style={{ flex: 1 }}>
+                          <input 
+                            type="number" 
+                            name={`sz_price_${idx}`}
+                            placeholder="Giá thêm (đ)" 
+                            value={sz.extra_price} 
+                            onChange={(e) => handleSizeInputChange(idx, 'extra_price', e.target.value)}
+                            required
+                          />
+                        </div>
                         <button 
                           type="button" 
                           onClick={() => handleRemoveSizeRow(idx)}
-                          style={{ padding: '6px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer' }}
+                          style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '14px', cursor: 'pointer', height: '48px', display: 'flex', alignItems: 'center' }}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -287,8 +299,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
 
               {/* ================= 🍧 KHU VỰC 2: CẤU HÌNH TOPPINGS ĐI KÈM ================= */}
               <div style={{ backgroundColor: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }}>
-                
-                {/* Cách chọn nhanh gợi ý */}
                 {toppingGoiYList.length > 0 && (
                   <div style={{ marginBottom: '12px', borderBottom: '1px dashed #cbd5e1', paddingBottom: '10px' }}>
                     <label className="qlsp-form-label" style={{ fontWeight: '600', color: '#475569', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -309,7 +319,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                   </div>
                 )}
 
-                {/* Danh sách gõ tay hoặc chỉnh sửa */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <label className="qlsp-form-label" style={{ fontWeight: 'bold', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Sliders size={15} /> Topping áp dụng cho món này:
@@ -329,26 +338,30 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {formData.toppings.map((tp, idx) => (
                       <div key={tp.topping_id || idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        <input 
-                          type="text" 
-                          placeholder="Tên topping (VD: Trân châu...)" 
-                          value={tp.topping_name} 
-                          onChange={(e) => handleToppingInputChange(idx, 'topping_name', e.target.value)}
-                          required
-                          style={{ flex: 2, padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#fff' }}
-                        />
-                        <input 
-                          type="number" 
-                          placeholder="Giá (đ)" 
-                          value={tp.price} 
-                          onChange={(e) => handleToppingInputChange(idx, 'price', e.target.value)}
-                          required
-                          style={{ flex: 1, padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#fff' }}
-                        />
+                        <div className="auth-input-wrap" style={{ flex: 2 }}>
+                          <input 
+                            type="text" 
+                            name={`tp_name_${idx}`}
+                            placeholder="Tên topping (VD: Trân châu...)" 
+                            value={tp.topping_name} 
+                            onChange={(e) => handleToppingInputChange(idx, 'topping_name', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="auth-input-wrap" style={{ flex: 1 }}>
+                          <input 
+                            type="number" 
+                            name={`tp_price_${idx}`}
+                            placeholder="Giá (đ)" 
+                            value={tp.price} 
+                            onChange={(e) => handleToppingInputChange(idx, 'price', e.target.value)}
+                            required
+                          />
+                        </div>
                         <button 
                           type="button" 
                           onClick={() => handleRemoveToppingRow(idx)}
-                          style={{ padding: '6px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer' }}
+                          style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '14px', cursor: 'pointer', height: '48px', display: 'flex', alignItems: 'center' }}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -357,7 +370,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                   </div>
                 )}
               </div>
-              {/* ============================================================== */}
 
               <div className="qlsp-modal-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '15px' }}>
                 <input type="checkbox" id="is_active_sp" name="is_active" checked={formData.is_active} onChange={handleInputChange} />
@@ -385,7 +397,7 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                   <th>Tên Nước Uống / Món Ăn</th>
                   <th>Danh Mục</th>
                   <th>Giá Gốc</th>
-                  <th>Kích Thước (Sizes)</th> {/* Cột mới bổ sung */}
+                  <th>Kích Thước (Sizes)</th>
                   <th>Toppings Đi Kèm</th>
                   <th style={{ width: '110px', textAlign: 'center' }}>Trạng Thái</th>
                   <th style={{ width: '140px', textAlign: 'center' }}>Thao Tác</th>
@@ -405,8 +417,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                       <td><strong>{sp.product_name}</strong></td>
                       <td><span className="qlsp-category-badge">{layTenDanhMucTheoId(sp.category)}</span></td>
                       <td className="qlsp-price-color">{sp.base_price?.toLocaleString()}đ</td>
-                      
-                      {/* HIỂN THỊ KÍCH THƯỚC LY */}
                       <td>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {sp.sizes && sp.sizes.length > 0 ? (
@@ -420,8 +430,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                           )}
                         </div>
                       </td>
-
-                      {/* HIỂN THỊ TOPPING */}
                       <td>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {sp.toppings && sp.toppings.length > 0 ? (
@@ -435,7 +443,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                           )}
                         </div>
                       </td>
-
                       <td style={{ textAlign: 'center' }}>
                         <span className={`qlsp-status ${sp.is_active ? 'active' : 'hidden-status'}`}>{sp.is_active ? 'Mở bán' : 'Ẩn'}</span>
                       </td>
@@ -450,7 +457,7 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                             description: sp.description || '', 
                             is_active: sp.is_active,
                             toppings: sp.toppings || [],
-                            sizes: sp.sizes || [] // Đổ mảng size từ DB ra form khi sửa
+                            sizes: sp.sizes || []
                           });
                           setHienForm(true);
                         }} className="qlsp-btn-edit" style={{ marginRight: '6px' }}>Sửa</button>

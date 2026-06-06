@@ -1,3 +1,30 @@
+/* --- LỚP BẢO VỆ CHỐNG AUTOFILL ĐỔI MÀU ĐEN --- */
+.auth-input-wrap {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: #ffffff !important; /* Luôn giữ màu trắng làm hình nền cố định */
+  border: 1px solid #cbd5e1;
+  width: 100%;
+}
+
+/* Biến thẻ input thật sự bên trong thành trong suốt hoàn toàn */
+.auth-input-wrap input {
+  width: 100% !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important; /* Phá hủy màu đen đè lên từ Autofill */
+  color: #333333 !important;
+  padding: 8px 0 !important;
+  font-size: 14px;
+}
+
+/* Đóng băng hiệu ứng chuyển màu nền mặc định của trình duyệt */
+.auth-input-wrap input:-webkit-autofill {
+  transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s !important;
+}
 .qlsp-container { width: 100%; box-sizing: border-box; }
 .qlsp-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
 .qlsp-main-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; }
