@@ -1,3 +1,44 @@
+/* --- LỚP BẢO VỆ CHỐNG AUTOFILL ĐỔI MÀU ĐEN (BẢN CẬP NHẬT TRIỆT ĐỂ) --- */
+.auth-input-wrap {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: #ffffff !important; /* Giữ hộp ngoài luôn luôn màu trắng */
+  border: 1px solid #cbd5e1;
+  width: 100%;
+  overflow: hidden; /* Chặn không cho màu đen bên trong tràn ra ngoài bo góc */
+}
+
+/* Biến thẻ input thật sự bên trong thành trong suốt hoàn toàn */
+.auth-input-wrap input {
+  width: 100% !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important; 
+  color: #333333 !important;
+  padding: 8px 0 !important;
+  font-size: 14px;
+}
+
+/* ============================================================
+   🔥 TUYỆT CHIÊU DIỆT TẬN GỐC NỀN ĐEN KHI CHROME TỰ ĐIỀN ĐÈ LÊN 
+   ============================================================ */
+.auth-input-wrap input:-webkit-autofill,
+.auth-input-wrap input:-webkit-autofill:hover, 
+.auth-input-wrap input:-webkit-autofill:focus, 
+.auth-input-wrap input:-webkit-autofill:active {
+  /* 1. Đập tan màu nền đen bằng cách đổ bóng nội bộ (inset) màu TRẮNG chồng lên */
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+
+  /* 2. Ép chữ bên trong luôn là màu tối (không bị biến thành chữ trắng trên nền trắng) */
+  -webkit-text-fill-color: #333333 !important;
+  
+  /* 3. Đóng băng thuộc tính màu nền của Chrome, không cho nó đổi màu */
+  transition: background-color 50000s ease-in-out 0s !important;
+}
 /* ==========================================================================
    🎨 FILE: QuanLyKhuyenMai.css
    Giao diện quản lý khuyến mãi: Tiêu đề nằm giữa, đồng bộ chuẩn danh mục sản phẩm

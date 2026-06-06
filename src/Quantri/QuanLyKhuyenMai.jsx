@@ -126,34 +126,105 @@ const QuanLyKhuyenMai = () => {
             <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700' }}>
               {dangSuaId ? '✏️ CẬP NHẬT MÃ GIẢM GIÁ' : '➕ THÊM MÃ ƯU ĐÃI MỚI'}
             </h3>
-            <form onSubmit={handleSavePromotion}>
-              <div className="qlkm-form-group">
-                <label className="qlkm-form-label">Mã voucher (Viết liền không dấu) *</label>
-                <input type="text" name="code" value={formData.code} disabled={dangSuaId !== null} onChange={handleInputChange} required className="qlkm-input qlkm-input-code" placeholder="VD: NHAMATVVIP, GIAM30K" />
-              </div>
-              <div className="qlkm-form-group">
-                <label className="qlkm-form-label">Mức giảm giá tiền mặt (VNĐ) *</label>
-                <input type="number" name="discount_value" value={formData.discount_value} onChange={handleInputChange} required className="qlkm-input" placeholder="Khấu trừ thẳng vào đơn" />
-              </div>
-              <div className="qlkm-form-group">
-                <label className="qlkm-form-label">Giới hạn số lượt dùng (Để trống = Vô hạn)</label>
-                <input type="number" name="usage_limit" value={formData.usage_limit} onChange={handleInputChange} className="qlkm-input" placeholder="Tổng số lượng mã phát ra" />
+            <form onSubmit={handleSavePromotion} autoComplete="off" noValidate>
+              
+              {/* 🚀 BẪY CHROME: Đánh lạc hướng tính năng tự động điền nâng cao */}
+              <div style={{ position: 'absolute', opacity: 0, zIndex: -1, height: 0, overflow: 'hidden' }}>
+                <input type="text" name="chrome_fake_user" autoComplete="username" tabIndex="-1" />
+                <input type="password" name="chrome_fake_pass" autoComplete="current-password" tabIndex="-1" />
               </div>
 
+              {/* Ô VOUCHER */}
+              <div className="qlkm-form-group">
+                <label className="qlkm-form-label">Mã voucher (Viết liền không dấu) *</label>
+                <div className="auth-input-wrap">
+                  <input 
+                    type="text" 
+                    name="code" 
+                    value={formData.code} 
+                    disabled={dangSuaId !== null} 
+                    onChange={handleInputChange} 
+                    required 
+                    autoComplete="new-password"
+                    placeholder="VD: NHAMATVVIP, GIAM30K" 
+                  />
+                </div>
+              </div>
+
+              {/* Ô MỨC GIẢM GIÁ */}
+              <div className="qlkm-form-group">
+                <label className="qlkm-form-label">Mức giảm giá tiền mặt (VNĐ) *</label>
+                <div className="auth-input-wrap">
+                  <input 
+                    type="number" 
+                    name="discount_value" 
+                    value={formData.discount_value} 
+                    onChange={handleInputChange} 
+                    required 
+                    autoComplete="new-password"
+                    placeholder="Khấu trừ thẳng vào đơn" 
+                  />
+                </div>
+              </div>
+
+              {/* Ô GIỚI HẠN LƯỢT DÙNG */}
+              <div className="qlkm-form-group">
+                <label className="qlkm-form-label">Giới hạn số lượt dùng (Để trống = Vô hạn)</label>
+                <div className="auth-input-wrap">
+                  <input 
+                    type="number" 
+                    name="usage_limit" 
+                    value={formData.usage_limit} 
+                    onChange={handleInputChange} 
+                    autoComplete="new-password"
+                    placeholder="Tổng số lượng mã phát ra" 
+                  />
+                </div>
+              </div>
+
+              {/* CỤM ĐÈ NGÀY THÁNG */}
               <div className="qlkm-form-row">
                 <div className="qlkm-form-group">
                   <label className="qlkm-form-label">Bắt đầu từ ngày *</label>
-                  <input type="date" name="start_date" value={formData.start_date} onChange={handleInputChange} required className="qlkm-input" />
+                  <div className="auth-input-wrap">
+                    <input 
+                      type="date" 
+                      name="start_date" 
+                      value={formData.start_date} 
+                      onChange={handleInputChange} 
+                      required 
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </div>
                 <div className="qlkm-form-group">
                   <label className="qlkm-form-label">Hạn cuối ngày *</label>
-                  <input type="date" name="end_date" value={formData.end_date} onChange={handleInputChange} required className="qlkm-input" />
+                  <div className="auth-input-wrap">
+                    <input 
+                      type="date" 
+                      name="end_date" 
+                      value={formData.end_date} 
+                      onChange={handleInputChange} 
+                      required 
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </div>
               </div>
 
+              {/* Ô MÔ TẢ */}
               <div className="qlkm-form-group" style={{ marginTop: '16px' }}>
                 <label className="qlkm-form-label">Mô tả ngắn chiến dịch</label>
-                <input type="text" name="description" value={formData.description} onChange={handleInputChange} className="qlkm-input" placeholder="Hiển thị cho khách khi thanh toán..." />
+                <div className="auth-input-wrap">
+                  <input 
+                    type="text" 
+                    name="description" 
+                    value={formData.description} 
+                    onChange={handleInputChange} 
+                    autoComplete="new-password"
+                    placeholder="Hiển thị cho khách khi thanh toán..." 
+                  />
+                </div>
               </div>
 
               <div className="qlkm-checkbox-group">
