@@ -102,12 +102,10 @@
   justify-content: flex-end;
   overflow: hidden;
   position: relative;
-  background:
-    linear-gradient(135deg, rgba(47, 37, 25, 0.72), rgba(47, 37, 25, 0.34)),
-    url("../img/z7911397553182_ebfe6eeb8bc0c092fa5108f7f4317120.jpg") center/cover;
-  color: #fff;
+  /* Chỉ giữ lại hình nền gốc */
+  background: url("../img/{293A72F7-A8DD-424F-BFB7-EC60BA127ED7}.png") center/cover;
+  color: #fff; /* Lưu ý: Chữ trắng có thể sẽ khó đọc trên nền ảnh sáng */
 }
-
 .auth-brand-panel::before {
   content: "";
   position: absolute;
