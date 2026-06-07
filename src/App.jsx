@@ -7,15 +7,17 @@ import DangNhap from './dangnhap/DangNhap';
 
 import Admin from './Quantri/AdminDashboard';
 import QT_Nhanvien from './Quantri/QuanLyNhanVien';
+import QT_Shipper from './Quantri/QuanLyShipper';
 import QT_Sanpham from './Quantri/QuanLySanPham';
 import QT_Thongke from './Quantri/QuanLyThongKe';
 import QT_Danhmuc from './Quantri/QuanLyDanhMucSanPham';
 import QT_KhuyenMai from './Quantri/QuanLyKhuyenMai';
 import Nhanvien from './nhanvien/NhanvienDashboard';
 import KhachHang from './khachhang/KhachhangDashboard';
+import Shipper from './Shipper/ShipperDashboard';
 import PayOSReturn from './khachhang/PayOSReturn';
 import PayOSCancel from './khachhang/PayOSCancel';
-
+import QT_Donhang from './Quantri/QuanLyDonHang';
 
 import './App.css';
 
@@ -42,10 +44,13 @@ function App() {
         <Route path="/qthongke" element={<QT_Thongke />} />
         <Route path="/qt_danhmuc" element={<QT_Danhmuc />} />
         <Route path="/QT_khuyenmai" element={<QT_KhuyenMai />} />
-
+        <Route path="/qtshipper" element={<QT_Shipper />} />
+        <Route path="/qtdonhang" element={<QT_Donhang />} />
+        
         {/* Nhân viên / khách hàng */}
         <Route path="/nhanvien" element={<Nhanvien />} />
         <Route path="/khachhang" element={<KhachHang />} />
+        <Route path="/shipper" element={<Shipper />} />
         <Route path="/payos-return" element={<PayOSReturn />} />
         <Route path="/payos-cancel" element={<PayOSCancel />} />
 

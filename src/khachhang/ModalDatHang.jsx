@@ -25,9 +25,9 @@ const ModalDatHang = ({
   const [thongTinKhach, setThongTinKhach] = useState(null);
 
   // --- State phục vụ cho tính năng Danh sách Mã giảm giá từ CSDL ---
-  const [danhSachKhuyenMai, setDanhSachKhuyenMai] = useState([]); // Lưu mảng mã lấy từ DB
-  const [idMaGiamGiaChon, setIdMaGiamGiaChon] = useState(''); // Lưu _id của mã đang chọn trong <select>
-  const [promotionApDung, setPromotionApDung] = useState(null); // Object mã giảm giá hợp lệ cuối cùng
+  const [danhSachKhuyenMai, setDanhSachKhuyenMai] = useState([]); 
+  const [idMaGiamGiaChon, setIdMaGiamGiaChon] = useState(''); 
+  const [promotionApDung, setPromotionApDung] = useState(null); 
 
   const khachHienThi = thongTinKhach || nguoiDung;
 
@@ -62,6 +62,15 @@ const ModalDatHang = ({
       ? Math.max(0, Number(customerCash) - tongThanhToan)
       : 0;
 
+  // 💡 BỔ SUNG: Lắng nghe sự kiện nút ESC để đóng modal nhanh
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // 1. Tải danh sách mã giảm giá hợp lệ từ CSDL khi mở modal
   useEffect(() => {
     if (!isOpen) return;
@@ -85,8 +94,6 @@ const ModalDatHang = ({
   const handleThayDoiMaGiamGia = (e) => {
     const selectedId = e.target.value;
     setIdMaGiamGiaChon(selectedId);
-    
-    // Reset số tiền khách đưa khi đổi mã giảm giá để tránh bug tổng tiền mới lệch với tiền mặt đã nhập
     setCustomerCash(''); 
 
     if (!selectedId) {
@@ -95,15 +102,24 @@ const ModalDatHang = ({
       return;
     }
 
-    // Tìm object promotion tương ứng trong danh sách đã tải về
     const promo = danhSachKhuyenMai.find((item) => item._id === selectedId);
     if (promo) {
+      // 💡 BỔ SUNG KIỂM TRA: Đơn hàng đủ giá trị tối thiểu chưa (nếu DB có trường min_order_value)
+      if (promo.min_order_value && tongTienHang < promo.min_order_value) {
+        setPromotionApDung(null);
+        setIdMaGiamGiaChon('');
+        setThongBao({ 
+          kieu: 'loi', 
+          noiDung: `Mã ${promo.code} yêu cầu đơn hàng tối thiểu từ ${formatTien(promo.min_order_value)}!` 
+        });
+        return;
+      }
+
       setPromotionApDung(promo);
       setThongBao({ kieu: 'ok', noiDung: `Đã chọn mã: ${promo.code} (Giảm ${formatTien(promo.discount_value)})` });
     }
   };
 
-  // Reset số tiền khách đưa khi chuyển đổi qua lại giữa phương thức CASH và PAYOS
   const handleThayDoiPhuongThucThanhToan = (method) => {
     setPaymentMethod(method);
     setCustomerCash('');
@@ -229,7 +245,7 @@ const ModalDatHang = ({
       order_type: 'online',
       user_id: userId,
       items,
-      promotion_code: promotionApDung?._id || null, // Đồng bộ trường promotion_code gửi lên
+      promotion_code: promotionApDung?._id || null, 
       discount_amount: soTienGiam,
       products_subtotal: tongTienHang,
       shipping_fee: phiShip?.shipping_fee ?? 0,
@@ -385,11 +401,16 @@ const ModalDatHang = ({
               }}
             >
               <option value="">-- Bấm vào đây để chọn mã giảm giá --</option>
-              {danhSachKhuyenMai.map((item) => (
-                <option key={item._id} value={item._id}>
-                  {item.code} [Giảm {formatTien(item.discount_value)}]
-                </option>
-              ))}
+              {danhSachKhuyenMai.map((item) => {
+                // 💡 TỐI ƯU UX: Đánh dấu mã không đủ điều kiện đơn hàng tối thiểu bằng text trực quan
+                const khongDuDieuKien = item.min_order_value && tongTienHang < item.min_order_value;
+                return (
+                  <option key={item._id} value={item._id} disabled={khongDuDieuKien}>
+                    {item.code} [Giảm {formatTien(item.discount_value)}] 
+                    {khongDuDieuKien ? ` (Đơn tối thiểu ${formatTien(item.min_order_value)})` : ''}
+                  </option>
+                );
+              })}
             </select>
 
             {/* HIỂN THỊ TÊN MÔ TẢ CHI TIẾT CỦA MÃ KHUYẾN MÃI ĐANG CHỌN */}

@@ -1,20 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, ClipboardList, Pencil, MapPin, Eye, XCircle, Save, User, X, PackageSearch, ShoppingBag, History } from 'lucide-react';
+import { Package, ClipboardList, Pencil, MapPin, Eye, XCircle, Save, User, X, PackageSearch, ShoppingBag, History, Star, CheckCircle } from 'lucide-react';
 import TrangChuHeader from '../components/TrangChuHeader';
 import ModalDiaChiGiaoHang from './ModalDiaChiGiaoHang';
 import '../css/TrangChu.css';
 import '../css/khachhang/KhachhangDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-const TRANG_THAI = {
-  pending: { label: 'Đã đặt', className: 'khdh-status-pending' },
-  preparing: { label: 'Đang chuẩn bị', className: 'khdh-status-preparing' },
-  shipping: { label: 'Đang giao hàng', className: 'khdh-status-shipping' },
-  completed: { label: 'Hoàn thành', className: 'khdh-status-completed' },
-  cancelled: { label: 'Đã hủy', className: 'khdh-status-cancelled' },
-};
 
 const formatTien = (n) => Number(n || 0).toLocaleString('vi-VN') + 'đ';
 const formatNgay = (d) =>
@@ -35,6 +27,26 @@ const KhachhangDashboard = () => {
   const [dangHuy, setDangHuy] = useState(null);
   const [dangLuuHoSo, setDangLuuHoSo] = useState(false);
 
+  // ➕ STATE PHỤC VỤ CHO ĐÁNH GIÁ SẢN PHẨM
+  const [modalReview, setModalReview] = useState(false);
+  const [selectedReviewProduct, setSelectedReviewProduct] = useState(null); 
+  const [rating, setRating] = useState(5);
+  const [commentText, setCommentText] = useState('');
+  const [dangGuiReview, setDangGuiReview] = useState(false);
+
+  // =========================================================================
+  // 🔥 ĐOẠN BỔ SUNG: TỰ ĐỘNG ĐÓNG ALERT / TOAST THÔNG BÁO SAU 2 GIÂY
+  // =========================================================================
+  useEffect(() => {
+    if (thongBao.noiDung) {
+      const timer = setTimeout(() => {
+        setThongBao({ kieu: '', noiDung: '' });
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [thongBao.noiDung]);
+
   const taiDuLieu = useCallback(async (uid) => {
     if (!uid) return;
     setLoading(true);
@@ -46,7 +58,16 @@ const KhachhangDashboard = () => {
       const dataDon = await resDon.json();
       const dataHoSo = await resHoSo.json();
 
-      if (resDon.ok) setDonHang(dataDon.orders || []);
+      if (resDon.ok) {
+        setDonHang(dataDon.orders || []);
+        
+        // Cập nhật lại state donChiTiet nếu modal chi tiết đang mở để đồng bộ dữ liệu đánh giá mới
+        if (donChiTiet) {
+          const updatedDon = (dataDon.orders || []).find(o => o._id === donChiTiet._id);
+          if (updatedDon) setDonChiTiet(updatedDon);
+        }
+      }
+      
       if (resHoSo.ok) {
         setHoSo(dataHoSo.user);
         setDiaChi(dataHoSo.shipping_address);
@@ -75,7 +96,7 @@ const KhachhangDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [donChiTiet]);
 
   useEffect(() => {
     const roleId = Number(localStorage.getItem('role_id'));
@@ -163,9 +184,113 @@ const KhachhangDashboard = () => {
     setThongBao({ kieu: 'thanhcong', noiDung: 'Đã cập nhật địa chỉ giao hàng!' });
   };
 
+  const handleGuiReview = async (e) => {
+    e.preventDefault();
+    if (!selectedReviewProduct || selectedReviewProduct.is_reviewed) return;
+    setDangGuiReview(true);
+    try {
+      const res = await fetch(`${API_URL}/api/khachhang/danh-gia`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          order_id: selectedReviewProduct.order_id,
+          product_id: selectedReviewProduct.product_id,
+          rating,
+          comment_text: commentText,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setThongBao({ kieu: 'thanhcong', noiDung: 'Đăng bình luận, đánh giá thành công!' });
+        setModalReview(false);
+        setCommentText('');
+        setRating(5);
+        taiDuLieu(userId);
+      } else {
+        setThongBao({ kieu: 'loi', noiDung: data.message || 'Gửi đánh giá thất bại!' });
+      }
+    } catch {
+      setThongBao({ kieu: 'loi', noiDung: 'Lỗi kết nối máy chủ!' });
+    } finally {
+      setDangGuiReview(false);
+    }
+  };
+
+  const openModalReview = (orderId, item) => {
+    setSelectedReviewProduct({ 
+      order_id: orderId, 
+      product_id: item.product_id, 
+      product_name: item.product_name,
+      is_reviewed: !!item.is_reviewed
+    });
+
+    if (item.is_reviewed && item.my_review) {
+      setRating(item.my_review.rating || 5);
+      setCommentText(item.my_review.comment_text || '');
+    } else {
+      setRating(5);
+      setCommentText('');
+    }
+    setModalReview(true);
+  };
+
+  const renderNutDanhGiaMon = (donId, item) => {
+    if (item.is_reviewed) {
+      return (
+        <button
+          type="button"
+          className="khdh-btn-review-item reviewed"
+          style={{
+            padding: '6px 12px',
+            fontSize: '12px',
+            backgroundColor: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: '6px',
+            color: '#16a34a',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontWeight: '500'
+          }}
+          onClick={() => openModalReview(donId, item)}
+        >
+          <CheckCircle size={14} /> Xem lại
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className="khdh-btn-review-item to-review"
+        style={{
+          padding: '6px 12px',
+          fontSize: '12px',
+          backgroundColor: '#fffbeb',
+          border: '1px solid #fcd34d',
+          borderRadius: '6px',
+          color: '#b45309',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          fontWeight: '500'
+        }}
+        onClick={() => openModalReview(donId, item)}
+      >
+        <Star size={14} fill="#b45309" /> Đánh giá
+      </button>
+    );
+  };
+
   const renderDonCard = (don) => {
-    const st = TRANG_THAI[don.status] || { label: don.status, className: '' };
+    const labelHienThi = don.status_detail?.label || don.status;
+    const classHienThi = don.status_detail?.className || '';
     const maDon = don._id?.slice(-8).toUpperCase() || '—';
+    const tongSoLuongMon = (don.items || []).reduce((acc, item) => acc + (item.quantity || 0), 0);
+
     return (
       <div key={don._id} className="tc-card khdh-order-card">
         <div className="tc-card-body">
@@ -174,14 +299,56 @@ const KhachhangDashboard = () => {
               <span className="khdh-order-code">#{maDon}</span>
               <span className="khdh-order-date">{formatNgay(don.createdAt)}</span>
             </div>
-            <span className={`khdh-status-badge ${st.className}`}>{st.label}</span>
+            <span className={`khdh-status-badge ${classHienThi}`}>{labelHienThi}</span>
           </div>
+
+          <div className="khdh-order-items-preview">
+            {(don.items || []).map((item, index) => {
+              const hinhAnhUrl = item.product_image 
+                ? (item.product_image.startsWith('http') ? item.product_image : `${API_URL}${item.product_image}`)
+                : 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
+
+              return (
+                <div key={index} className="khdh-preview-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
+                    <img 
+                      src={hinhAnhUrl} 
+                      alt={item.product_name} 
+                      className="khdh-preview-img" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
+                      }}
+                    />
+                    <div className="khdh-preview-info">
+                      <div className="khdh-preview-name-row">
+                        <span className="khdh-preview-name">{item.product_name}</span>
+                        <span className="khdh-preview-price">{formatTien(item.subtotal)}</span>
+                      </div>
+                      <div className="khdh-preview-sub-row">
+                        <span className="khdh-preview-qty">Số lượng: <strong>{item.quantity}</strong></span>
+                        {item.selected_toppings?.length > 0 && (
+                          <span className="khdh-preview-toppings">
+                            (+ {item.selected_toppings.map(t => t.topping_name).join(', ')})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {don.status === 'completed' && renderNutDanhGiaMon(don._id, item)}
+                </div>
+              );
+            })}
+          </div>
+
           <p className="khdh-order-summary">
-            {don.items?.length || 0} món · <strong>{formatTien(don.total_amount)}</strong>
+            Tổng cộng: {don.items?.length || 0} loại món ({tongSoLuongMon} sản phẩm) · Tổng tiền: <strong>{formatTien(don.total_amount)}</strong>
           </p>
+
           {don.shipping_address?.address_detail && (
             <p className="khdh-order-addr"><MapPin size={15} /> {don.shipping_address.address_detail}</p>
           )}
+
           <div className="tc-card-footer khdh-order-footer">
             <button type="button" className="tc-btn-order" onClick={() => setDonChiTiet(don)}>
               <Eye size={16} /> Theo dõi chi tiết
@@ -205,17 +372,17 @@ const KhachhangDashboard = () => {
   const renderTimeline = (don) => {
     const history = don.status_history?.length
       ? [...don.status_history].reverse()
-      : [{ status: don.status, updated_at: don.updatedAt || don.createdAt }];
+      : [{ status: don.status, status_label: don.status_detail?.label || don.status, updated_at: don.updatedAt || don.createdAt }];
 
     return (
       <ul className="khdh-timeline">
         {history.map((step, idx) => {
-          const st = TRANG_THAI[step.status] || { label: step.status };
+          const tenTrangThai = step.status_label || step.status;
           return (
             <li key={idx} className="khdh-timeline-item">
               <span className="khdh-timeline-dot" />
               <div>
-                <strong>{st.label}</strong>
+                <strong>{tenTrangThai}</strong>
                 <span className="khdh-timeline-time">{formatNgay(step.updated_at)}</span>
                 {step.reason && <p className="khdh-timeline-reason">{step.reason}</p>}
               </div>
@@ -381,47 +548,207 @@ const KhachhangDashboard = () => {
               <X size={20} />
             </button>
             <div className="tc-modal-right" style={{ width: '100%', padding: '24px' }}>
-              <h2>Đơn #{donChiTiet._id?.slice(-8).toUpperCase()}</h2>
-              <p className="khdh-modal-total">Tổng tiền: {formatTien(donChiTiet.total_amount)}</p>
-              {donChiTiet.shipping_fee > 0 && (
-                <p className="khdh-modal-ship">
-                  Phí ship ({donChiTiet.distance_km} km): {formatTien(donChiTiet.shipping_fee)}
-                </p>
-              )}
+              <div className="khdh-modal-header-block">
+                <h2>Đơn #{donChiTiet._id?.slice(-8).toUpperCase()}</h2>
+                <span className={`khdh-status-badge ${donChiTiet.status_detail?.className || ''}`}>
+                  {donChiTiet.status_detail?.label || donChiTiet.status}
+                </span>
+              </div>
+              <span className="khdh-modal-date">Thời gian đặt: {formatNgay(donChiTiet.createdAt)}</span>
+              
               {donChiTiet.shipping_address?.customer_name && (
-                <p className="khdh-modal-addr">
-                  <User size={15} /> {donChiTiet.shipping_address.customer_name}
+                <p className="khdh-modal-addr" style={{ marginTop: '12px' }}>
+                  <User size={15} /> <strong>{donChiTiet.shipping_address.customer_name}</strong>
                   {donChiTiet.shipping_address.phone && ` · ${donChiTiet.shipping_address.phone}`}
                 </p>
               )}
+              {donChiTiet.shipping_address?.address_detail && (
+                <p className="khdh-modal-addr-text">
+                  <MapPin size={14} /> {donChiTiet.shipping_address.address_detail}
+                </p>
+              )}
 
-              <h3 className="khdh-modal-label">Trạng thái đơn hàng</h3>
-              {renderTimeline(donChiTiet)}
+              <h3 className="khdh-modal-label">Lịch sử trạng thái đơn</h3>
+              <div className="khdh-modal-timeline-container">
+                {renderTimeline(donChiTiet)}
+              </div>
 
-              <h3 className="khdh-modal-label">Danh sách món</h3>
-              <ul className="khdh-item-list">
-                {(donChiTiet.items || []).map((item, i) => (
-                  <li key={i}>
-                    <span>{item.product_name} × {item.quantity}</span>
-                    <span>{formatTien(item.subtotal)}</span>
-                    {item.selected_toppings?.length > 0 && (
-                      <small>+ {item.selected_toppings.map((t) => t.topping_name).join(', ')}</small>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <h3 className="khdh-modal-label">Danh sách món đã đặt</h3>
+              <div className="khdh-modal-items-list-wrapper">
+                {(donChiTiet.items || []).map((item, i) => {
+                  const hinhAnhUrl = item.product_image 
+                    ? (item.product_image.startsWith('http') ? item.product_image : `${API_URL}${item.product_image}`)
+                    : 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
 
-              {coTheHuy(donChiTiet.status) && (
+                  return (
+                    <div key={i} className="khdh-modal-product-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
+                        <img 
+                          src={hinhAnhUrl} 
+                          alt={item.product_name} 
+                          className="khdh-modal-product-img" 
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
+                          }}
+                        />
+                        <div className="khdh-modal-product-info">
+                          <div className="khdh-modal-item-main">
+                            <span className="khdh-modal-item-name"><strong>{item.product_name}</strong></span>
+                            <span className="khdh-modal-item-subtotal">{formatTien(item.subtotal)}</span>
+                          </div>
+                          <div className="khdh-modal-item-details">
+                            <span>Số lượng: <strong>{item.quantity}</strong></span>
+                            {item.selected_toppings?.length > 0 && (
+                              <span className="khdh-modal-item-toppings">
+                                (+ Topping: {item.selected_toppings.map((t) => t.topping_name).join(', ')})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {donChiTiet.status === 'completed' && renderNutDanhGiaMon(donChiTiet._id, item)}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="khdh-modal-pricing-block">
+                <div className="khdh-price-row">
+                  <span>Tiền hàng (tạm tính):</span>
+                  <span>{formatTien(donChiTiet.products_subtotal || (donChiTiet.total_amount - (donChiTiet.shipping_fee || 0) + (donChiTiet.discount_amount || 0)))}</span>
+                </div>
+                <div className="khdh-price-row khdh-price-discount">
+                  <span>Giảm giá mã ưu đãi:</span>
+                  <span>-{formatTien(donChiTiet.discount_amount)}</span>
+                </div>
+                <div className="khdh-price-row">
+                  <span>Phí giao hàng {donChiTiet.distance_km ? `(${donChiTiet.distance_km} km)` : ''}:</span>
+                  <span>+{formatTien(donChiTiet.shipping_fee)}</span>
+                </div>
+                <hr className="khdh-price-divider" />
+                <div className="khdh-price-row khdh-price-total">
+                  <span>Tổng thanh toán:</span>
+                  <span className="khdh-total-highlight">{formatTien(donChiTiet.total_amount)}</span>
+                </div>
+                <div className="khdh-price-row khdh-payment-method">
+                  <span>Phương thức:</span>
+                  <small className="khdh-badge-method">{donChiTiet.payment_method === 'CASH' ? 'Tiền mặt (CASH)' : 'Chuyển khoản (PayOS)'}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: HIỂN THỊ ĐÁNH GIÁ */}
+      {modalReview && selectedReviewProduct && (
+        <div className="tc-modal-overlay" onClick={() => setModalReview(false)}>
+          <div className="tc-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px', padding: '24px', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+                {selectedReviewProduct.is_reviewed ? 'Đánh giá của bạn' : 'Đánh giá sản phẩm'}
+              </h3>
+              <button type="button" onClick={() => setModalReview(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p style={{ fontSize: '14px', color: '#4b5563', marginBottom: '8px' }}>
+              Món ăn: <strong>{selectedReviewProduct.product_name}</strong>
+            </p>
+
+            <div style={{ textAlign: 'center', fontSize: '24px', fontWeight: 'bold', color: '#fbbf24', marginBottom: '10px' }}>
+              {rating} / 5 ⭐
+            </div>
+
+            <form onSubmit={handleGuiReview}>
+              <div className="star-rating-container" style={{ pointerEvents: selectedReviewProduct.is_reviewed ? 'none' : 'auto', display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '15px' }}>
+                {[1, 2, 3, 4, 5].map((index) => {
+                  let isFull = index <= rating;
+                  let isHalf = !isFull && (index - 0.5) === rating;
+
+                  return (
+                    <div key={index} className="star-wrapper" style={{ position: 'relative', cursor: selectedReviewProduct.is_reviewed ? 'default' : 'pointer' }}>
+                      <Star
+                        size={32}
+                        fill={isFull ? '#fbbf24' : isHalf ? 'url(#halfStarGradient)' : 'none'}
+                        color={isFull || isHalf ? '#fbbf24' : '#d1d5db'}
+                      />
+
+                      {!selectedReviewProduct.is_reviewed && (
+                        <>
+                          <div 
+                            className="star-half left" 
+                            style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', zIndex: 2 }}
+                            onClick={() => setRating(index - 0.5)} 
+                            title={`${index - 0.5} sao`}
+                          />
+                          <div 
+                            className="star-half right" 
+                            style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%', zIndex: 2 }}
+                            onClick={() => setRating(index)} 
+                            title={`${index} sao`}
+                          />
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <svg style={{ width: 0, height: 0, position: 'absolute' }}>
+                <defs>
+                  <linearGradient id="halfStarGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="50%" stopColor="#fbbf24" />
+                    <stop offset="50%" stopColor="#e5e7eb" stopOpacity="1" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              <div className="khdh-field" style={{ marginBottom: '20px', marginTop: '15px' }}>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '6px', fontWeight: '500' }}>
+                  Nội dung bình luận
+                </label>
+                <textarea
+                  className="khdh-input"
+                  style={{ 
+                    width: '100%', 
+                    minHeight: '100px', 
+                    padding: '10px', 
+                    borderRadius: '8px', 
+                    border: '1px solid #d1d5db', 
+                    resize: 'vertical',
+                    backgroundColor: selectedReviewProduct.is_reviewed ? '#f9fafb' : '#fff'
+                  }}
+                  placeholder={selectedReviewProduct.is_reviewed ? '' : "Chia sẻ cảm nhận của bạn về hương vị ly trà sữa này nhé..."}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  disabled={selectedReviewProduct.is_reviewed}
+                  required
+                />
+              </div>
+
+              {!selectedReviewProduct.is_reviewed ? (
+                <button
+                  type="submit"
+                  className="tc-btn-submit-cart"
+                  style={{ width: '100%', padding: '12px', fontWeight: '600', borderRadius: '8px' }}
+                  disabled={dangGuiReview}
+                >
+                  {dangGuiReview ? 'Đang gửi đánh giá...' : 'Gửi đánh giá'}
+                </button>
+              ) : (
                 <button
                   type="button"
-                  className="khdh-btn-cancel khdh-btn-cancel-full"
-                  disabled={dangHuy === donChiTiet._id}
-                  onClick={() => handleHuyDon(donChiTiet._id)}
+                  className="khdh-btn-cancel"
+                  style={{ width: '100%', padding: '12px', fontWeight: '600', borderRadius: '8px', backgroundColor: '#e5e7eb', color: '#4b5563', border: 'none' }}
+                  onClick={() => setModalReview(false)}
                 >
-                  <><XCircle size={16} /> Hủy đơn hàng này</>
+                  Đóng cửa sổ
                 </button>
               )}
-            </div>
+            </form>
           </div>
         </div>
       )}

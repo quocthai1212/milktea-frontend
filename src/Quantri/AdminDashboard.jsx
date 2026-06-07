@@ -4,6 +4,11 @@ import QuanLyNhanVien from './QuanLyNhanVien';
 import QuanLyThongke from './QuanLyThongKe';
 import QuanLyDanhmuc from './QuanLyDanhMucSanPham';
 import QuanLyKhuyenMai from './QuanLyKhuyenMai';
+// 🎯 THÊM SỰ KIỆN: Import component Quản lý Shipper đã sửa lỗi dấu chấm thành công
+import QuanLyShipper from './QuanLyShipper.jsx'; 
+
+// 🆕 THÊM SỰ KIỆN: Import component Quản lý Đơn hàng
+import QuanLyDonHang from './QuanLyDonHang.jsx';
 
 import '../css/quantri/AdminDashboard.css'; 
 
@@ -59,12 +64,30 @@ export default function AdminDashboard() {
           >
             🏠 Tổng quan
           </li>
+
+          {/* 🆕 THÊM SỰ KIỆN: Nút chuyển sang Tab Quản lý Đơn hàng */}
+          <li 
+            onClick={() => handleTabChange('donhang')} 
+            className={`admin-menu-item ${currentTab === 'donhang' ? 'active' : ''}`}
+          >
+            📦 Quản lý đơn hàng
+          </li>
+
           <li 
             onClick={() => handleTabChange('nhanvien')} 
             className={`admin-menu-item ${currentTab === 'nhanvien' ? 'active' : ''}`}
           >
             👥 Quản lý nhân viên
           </li>
+
+          {/* 🎯 THÊM SỰ KIỆN: Nút chuyển sang Tab Quản lý Tài xế / Shipper */}
+          <li 
+            onClick={() => handleTabChange('shipper')} 
+            className={`admin-menu-item ${currentTab === 'shipper' ? 'active' : ''}`}
+          >
+            🏍️ Quản lý tài xế (Shipper)
+          </li>
+
           <li 
             onClick={() => handleTabChange('danhmuc')} 
             className={`admin-menu-item ${currentTab === 'danhmuc' ? 'active' : ''}`}
@@ -77,8 +100,6 @@ export default function AdminDashboard() {
           >
             🏷️ Quản lý khuyến mãi
           </li>
-          
-          {/* 🌟 ĐÃ BỔ SUNG: Nút chuyển sang Tab Thống kê báo cáo */}
           <li 
             onClick={() => handleTabChange('thongke')} 
             className={`admin-menu-item ${currentTab === 'thongke' ? 'active' : ''}`}
@@ -104,7 +125,13 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* 🆕 THÊM SỰ KIỆN: Render giao diện Quản lý Đơn hàng khi chọn tab */}
+          {currentTab === 'donhang' && <QuanLyDonHang />}
+
           {currentTab === 'nhanvien' && <QuanLyNhanVien />}
+          
+          {/* 🎯 THÊM SỰ KIỆN: Render giao diện Quản lý Shipper khi bấm tab */}
+          {currentTab === 'shipper' && <QuanLyShipper />}
           
           {/* Tab này tự kiểm soát việc hiện Danh mục hay Sản phẩm bên trong nó */}
           {currentTab === 'danhmuc' && <QuanLyDanhmuc />}

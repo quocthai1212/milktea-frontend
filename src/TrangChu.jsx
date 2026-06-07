@@ -15,12 +15,16 @@ const TrangChu = () => {
 
   // --- HỨNG DỮ LIỆU THỰC TẾ TỪ CƠ SỞ DỮ LIỆU ---
   const [danhSachSP, setDanhSachSP] = useState([]);
-  const [danhSachDM, setDanhSachDM] = useState([]); // ➕ Thêm trạng thái lưu danh mục động từ CSDL
+  const [danhSachDM, setDanhSachDM] = useState([]); 
   const [loading, setLoading] = useState(true);
+
+  // 🌟 THÊM: Trạng thái lưu trữ và loading bình luận động cho từng sản phẩm
+  const [danhSachBinhLuan, setDanhSachBinhLuan] = useState([]);
+  const [loadingBinhLuan, setLoadingBinhLuan] = useState(false);
 
   // Các trạng thái bộ lọc
   const [tuKhoa, setTuKhoa] = useState('');
-  const [nhomDaChon, setNhomDaChon] = useState('Tất cả'); // Lưu 'Tất cả' hoặc ID danh mục (_id)
+  const [nhomDaChon, setNhomDaChon] = useState('Tất cả'); 
 
   // Trạng thái cho Cửa sổ con (Modal) xem chi tiết & chọn Topping nhanh
   const [modalChiTiet, setModalChiTiet] = useState(false);
@@ -54,11 +58,8 @@ const TrangChu = () => {
         const data = await response.json();
         
         if (data.success) {
-          // 🎯 Đã sửa: Lưu danh sách danh mục động từ API, ẩn danh mục Topping ra khỏi thanh tab chính nếu muốn
           const dmGiaoDien = data.categories.filter(dm => dm.category_name !== 'Topping');
           setDanhSachDM(dmGiaoDien); 
-          
-          // Lưu danh sách sản phẩm
           setDanhSachSP(data.products); 
         }
       } catch (error) {
@@ -126,12 +127,31 @@ const TrangChu = () => {
     };
   }, []);
 
-  // Xử lý bật Modal đặt hàng nhanh
-  const handleOpenOrderModal = (sp) => {
+  // 🌟 NÂNG CẤP: Chuyển đổi thành hàm async để kích hoạt tải bình luận khi click xem món
+  const handleOpenOrderModal = async (sp) => {
     setSpXemChiTiet(sp);
     setToppingsDaChon([]);
     setSoLuongModal(1);
     setModalChiTiet(true);
+    
+    // Khởi tạo lại trạng thái nạp bình luận mới
+    setDanhSachBinhLuan([]);
+    setLoadingBinhLuan(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/khachhang/danh-gia/san-pham/${sp._id}`);
+      if (!response.ok) {
+        throw new Error(`Lỗi HTTP lấy bình luận! Trạng thái: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.success) {
+        setDanhSachBinhLuan(data.reviews || []);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải bình luận sản phẩm:", error);
+    } finally {
+      setLoadingBinhLuan(false);
+    }
   };
 
   const handleTangGiamSoLuongModal = (delta) => {
@@ -258,7 +278,6 @@ const TrangChu = () => {
 
     const khopTuKhoa = tenMon.includes(tuKhoaTim) || moTa.includes(tuKhoaTim);
     
-    // 🎯 Đã sửa: Lọc theo ID danh mục chính xác từ Populate DB (_id của category)
     const idDanhMucCuaSP = sp.category?._id || sp.category;
     const khopCategory = nhomDaChon === 'Tất cả' || idDanhMucCuaSP === nhomDaChon;
 
@@ -293,7 +312,7 @@ const TrangChu = () => {
       <header className="tc-hero">
         <div className="tc-hero-overlay"></div>
         <div className="tc-hero-content">
-          <h1>Hương Vị Đậm Đại - Đậm Đà Tình Thân</h1>
+          <h1>Hương Vị Đậm Đà - Đậm Đà Tình Thân</h1>
           <p>Trà sữa tươi ngon, giao nhanh, chọn món dễ dàng với trải nghiệm đặt hàng hiện đại.</p>
           <div className="tc-search-box">
             <input
@@ -310,7 +329,6 @@ const TrangChu = () => {
       {/* KHU VỰC THỰC ĐƠN CHÍNH */}
       <main className="tc-main-container">
         
-        {/* 🎯 Đã sửa: Thanh chuyển đổi nhóm danh mục dạng Tab sử dụng data ĐỘNG từ CSDL */}
         <div className="tc-category-tabs">
           <button
             className={`tc-tab-item ${nhomDaChon === 'Tất cả' ? 'active' : ''}`}
@@ -323,7 +341,7 @@ const TrangChu = () => {
             <button
               key={dm._id}
               className={`tc-tab-item ${nhomDaChon === dm._id ? 'active' : ''}`}
-              onClick={() => setNhomDaChon(dm._id)} // Lưu theo ID danh mục để lọc chính xác
+              onClick={() => setNhomDaChon(dm._id)} 
             >
               {dm.category_name}
             </button>
@@ -341,14 +359,23 @@ const TrangChu = () => {
           <div className="tc-grid">
             {danhSachLoc.map((sp) => (
               <div key={sp._id} className="tc-card">
-                <div className="tc-card-image-wrapper">
+                {/* 🌟 CHỈNH SỬA: Bọc sự kiện click vào ảnh để bật xem chi tiết */}
+                <div className="tc-card-image-wrapper" onClick={() => handleOpenOrderModal(sp)} style={{ cursor: 'pointer' }}>
                   <img src={sp.image} alt={sp.product_name} className="tc-card-img" />
-                  {/* 🎯 Đã sửa: Hiển thị chữ Tên danh mục thay vì hiển thị mã chuỗi ID */}
                   <span className="tc-card-badge">{sp.category?.category_name || "Món mới"}</span>
                 </div>
 
                 <div className="tc-card-body">
-                  <h4 className="tc-card-title">{sp.product_name}</h4>
+                  {/* 🌟 THÊM MỚI: Hiển thị điểm số sao đánh giá trung bình O(1) từ backend */}
+                  <div className="tc-card-rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#ffb800', marginBottom: '6px' }}>
+                    <span>⭐ {sp.rating_average ? sp.rating_average.toFixed(1) : "5.0"}</span>
+                    <span style={{ color: '#888', fontSize: '12px' }}>({sp.review_count || 0} đánh giá)</span>
+                  </div>
+
+                  {/* 🌟 CHỈNH SỬA: Click vào tiêu đề cũng mở Modal */}
+                  <h4 className="tc-card-title" onClick={() => handleOpenOrderModal(sp)} style={{ cursor: 'pointer' }}>
+                    {sp.product_name}
+                  </h4>
                   <p className="tc-card-desc">{sp.description}</p>
 
                   {/* Hiển thị nhanh danh sách topping có sẵn */}
@@ -377,10 +404,11 @@ const TrangChu = () => {
         )}
       </main>
 
-      {/* CỬA SỔ MODAL CHỌN TOPPING */}
+      {/* CỬA SỔ MODAL CHỌN TOPPING & XEM CHI TIẾT BÌNH LUẬN */}
       {modalChiTiet && spXemChiTiet && (
         <div className="tc-modal-overlay" onClick={() => setModalChiTiet(false)}>
-          <div className="tc-modal-container" onClick={(e) => e.stopPropagation()}>
+          {/* 🌟 CHỈNH SỬA: Bổ sung thanh cuộn dọc (overflowY) cho khung container lớn phòng khi nhiều bình luận */}
+          <div className="tc-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px', maxHeight: '85vh', overflowY: 'auto' }}>
             <button className="tc-modal-close" onClick={() => setModalChiTiet(false)} aria-label="Đóng"><X size={20} /></button>
 
             <div className="tc-modal-content">
@@ -389,9 +417,13 @@ const TrangChu = () => {
               </div>
 
               <div className="tc-modal-right">
-                {/* 🎯 Đã sửa: Hiển thị tên danh mục trong modal */}
                 <span className="tc-modal-category-badge">{spXemChiTiet.category?.category_name || "Món mới"}</span>
                 <h2>{spXemChiTiet.product_name}</h2>
+                
+                <div style={{ color: '#ffb800', marginBottom: '8px', fontSize: '13.5px', fontWeight: '500' }}>
+                  ⭐ {spXemChiTiet.rating_average ? spXemChiTiet.rating_average.toFixed(1) : "5.0"} / 5.0
+                </div>
+
                 <p className="tc-modal-desc">{spXemChiTiet.description}</p>
 
                 <div className="tc-modal-price-row">
@@ -470,6 +502,51 @@ const TrangChu = () => {
 
               </div>
             </div>
+
+            {/* 🌟 THÊM MỚI PHÂN ĐOẠN: HIỂN THỊ CÁC BÌNH LUẬN KHÁCH HÀNG TẠI ĐÁY MODAL */}
+            <hr style={{ margin: '20px 0 15px 0', border: '0', borderTop: '1px dashed #eee' }} />
+            
+            <div className="tc-modal-reviews-section" style={{ padding: '0 10px 15px 10px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#222', marginBottom: '12px' }}>
+                Đánh giá đóng góp ({danhSachBinhLuan.length})
+              </h3>
+
+              {loadingBinhLuan ? (
+                <div style={{ textAlign: 'center', color: '#777', padding: '15px 0', fontSize: '13px' }}>
+                  Đang đồng bộ danh sách nhận xét...
+                </div>
+              ) : danhSachBinhLuan.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '220px', overflowY: 'auto', paddingRight: '5px' }}>
+                  {danhSachBinhLuan.map((bl, idx) => (
+                    <div key={bl._id || idx} style={{ background: '#f8f9fa', padding: '10px 12px', borderRadius: '6px', border: '1px solid #f1f2f3' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        {/* Đọc trường full_name từ cấu trúc populate của user_id */}
+                        <strong style={{ fontSize: '13px', color: '#333' }}>
+                          {bl.user_id?.full_name || "Khách hàng hệ thống"}
+                        </strong>
+                        <span style={{ color: '#ffb800', fontSize: '11px' }}>
+                          {"⭐".repeat(bl.rating || 5)}
+                        </span>
+                      </div>
+                      {/* Đọc trường comment_text chính xác từ ReviewSchema */}
+                      <p style={{ margin: 0, fontSize: '12.5px', color: '#555', lineHeight: '1.4' }}>
+                        {bl.comment_text || "Khách hàng không để lại nội dung bằng văn bản."}
+                      </p>
+                      {bl.createdAt && (
+                        <span style={{ display: 'block', fontSize: '10px', color: '#aaa', marginTop: '4px', textAlign: 'right' }}>
+                          {new Date(bl.createdAt).toLocaleDateString('vi-VN')}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: '#999', fontSize: '13px', fontStyle: 'italic', textAlign: 'center', padding: '15px 0', margin: 0 }}>
+                  Chưa có bình luận nào cho sản phẩm này.
+                </p>
+              )}
+            </div>
+
           </div>
         </div>
       )}

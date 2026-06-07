@@ -425,3 +425,289 @@
   justify-content: center;
   gap: 8px;
 }
+/* Container bọc danh sách sản phẩm xem trước */
+.khdh-order-items-preview {
+  margin: 14px 0;
+  border-top: 1px dashed #eee;
+  border-bottom: 1px dashed #eee;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Từng dòng sản phẩm */
+.khdh-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Ảnh thu nhỏ của món ăn */
+.khdh-preview-img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  background-color: #fafafa;
+}
+
+/* Khối thông tin văn bản bên phải ảnh */
+.khdh-preview-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.khdh-preview-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.khdh-preview-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.khdh-preview-price {
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
+}
+
+.khdh-preview-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #777;
+}
+
+.khdh-preview-qty strong {
+  color: #ff4d4f; /* Làm nổi bật số lượng đặt mua */
+}
+
+.khdh-preview-toppings {
+  font-style: italic;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+/* Khối bao bọc chi tiết tính tiền hóa đơn trong Modal */
+.khdh-modal-pricing-block {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 16px 0;
+  border: 1px solid #f0f0f0;
+}
+
+/* Từng hàng thông tin giá trị tiền */
+.khdh-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.khdh-price-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Nổi bật dòng giảm giá */
+.khdh-price-discount {
+  color: #52c41a; /* Màu xanh lá tươi mát cho mã giảm giá */
+  font-weight: 500;
+}
+
+/* Đường gạch phân cách tính tổng tiền */
+.khdh-price-divider {
+  border: 0;
+  border-top: 1px dashed #d9d9d9;
+  margin: 10px 0;
+}
+
+/* Dòng tổng tiền thanh toán cuối cùng */
+.khdh-price-total {
+  font-size: 16px;
+  color: #222;
+  font-weight: 600;
+}
+
+.khdh-total-highlight {
+  font-size: 18px;
+  color: #ff4d4f; /* Màu đỏ làm điểm nhấn tổng thanh toán */
+}
+
+/* Phần hiển thị phương thức thanh toán nhỏ */
+.khdh-payment-method {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 6px;
+}
+
+.khdh-badge-method {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Sắp xếp cấu trúc tên sản phẩm */
+.khdh-modal-item-main {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+.khdh-modal-item-sub {
+  font-size: 12px;
+  color: #8c8c8c;
+  padding-left: 4px;
+}
+.khdh-modal-date {
+  font-size: 13px;
+  color: #8c8c8c;
+  display: block;
+}
+/* Khối tiêu đề chính của Modal */
+.khdh-modal-header-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* Khung bọc vùng timeline trạng thái trong modal */
+.khdh-modal-timeline-container {
+  max-height: 180px;
+  overflow-y: auto;
+  background: #fdfdfd;
+  border: 1px solid #f2f2f2;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+/* Khung bọc danh sách món ăn trong modal */
+.khdh-modal-items-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Từng item sản phẩm trong modal */
+.khdh-modal-product-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #f0f0f0;
+}
+
+.khdh-modal-product-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Ảnh sản phẩm trong Modal */
+.khdh-modal-product-img {
+  width: 58px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #eaeaea;
+}
+
+/* Khối thông tin của sản phẩm */
+.khdh-modal-product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.khdh-modal-item-name {
+  font-size: 14px;
+  color: #262626;
+}
+
+.khdh-modal-item-subtotal {
+  font-weight: 600;
+  color: #434343;
+}
+
+.khdh-modal-item-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+.khdh-modal-item-toppings {
+  font-style: italic;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+/* =========================================================================
+   🔥 ĐOẠN BỔ SUNG: BIẾN ALERT THÀNH TOAST THÔNG BÁO Ở GÓC TRÊN BÊN PHẢI
+   ========================================================================= */
+   .khdh-alert {
+    position: fixed !important;
+    top: 24px;
+    right: 24px;
+    z-index: 99999; /* Đảm bảo luôn nổi lên trên cùng, kể cả trên Modal */
+    min-width: 300px;
+    max-width: 420px;
+    padding: 16px 20px !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Tạo độ nổi khối đổ bóng */
+    
+    /* Hiệu ứng xuất hiện mượt mà */
+    animation: slideInToast 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* Định dạng tiêu đề/nội dung chữ bên trong thông báo */
+  .khdh-alert-ok, .khdh-alert-err {
+    font-weight: 600;
+    font-size: 14.5px;
+  }
+  
+  /* Hiệu ứng trượt từ bên phải vào màn hình */
+  @keyframes slideInToast {
+    0% {
+      opacity: 0;
+      transform: translateX(100%) scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+  
+  /* Tối ưu hiển thị responsive mượt mà trên thiết bị di động */
+  @media (max-width: 576px) {
+    .khdh-alert {
+      top: 16px;
+      right: 16px;
+      left: 16px; /* Chiếm trọn chiều ngang trên điện thoại */
+      min-width: auto;
+      max-width: none;
+    }
+  }

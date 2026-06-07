@@ -34,10 +34,14 @@ const DangNhap = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('role_id', data.role_id);
 
+        // Phân quyền điều hướng dựa trên role_id
         if (Number(data.role_id) === 1) {
           navigate('/admin');
         } else if (Number(data.role_id) === 2) {
           navigate('/nhanvien');
+        } else if (Number(data.role_id) === 4) {
+          // 🎯 THÊM QUYỀN SỐ 4: Chuyển hướng tài xế về giao diện Shipper
+          navigate('/shipper');
         } else if (Number(data.role_id) === 3) {
           if (data.shipping_address?.address_detail) {
             localStorage.setItem(

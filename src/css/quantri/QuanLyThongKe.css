@@ -1,230 +1,618 @@
-/* Bản tối giản siêu ngắn (Chỉ 1 dòng selector) */
-.auth-input-wrap input:-webkit-autofill {
-  box-shadow: 0 0 0px 1000px #ffffff inset !important;
-  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
-  -webkit-text-fill-color: #333333 !important;
-  transition: background-color 50000s ease-in-out 0s !important;
-}
-/* --- Tổng quan bộ khung thống kê --- */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ==========================================================================
+   🧱 CONTAINER CHÍNH
+   ========================================================================== */
 .tk-container {
-    padding: 24px;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f8f9fa;
-    min-height: 100vh;
-  }
-  
-  /* --- Khu vực Tiêu đề (Header) --- */
-  .tk-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    border-bottom: 2px solid #e9ecef;
-    padding-bottom: 16px;
-  }
-  
-  .tk-title {
-    margin: 0;
-    color: #212529;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 24px;
-  }
-  
-  .tk-btn-refresh {
-    display: flex;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(149, 157, 165, 0.08);
+  margin: 10px;
+}
+
+/* ==========================================================================
+   📌 TIÊU ĐỀ TRANG & NÚT LÀM MỚI
+   ========================================================================== */
+.tk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tk-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.tk-title-icon {
+  color: #4f46e5;
+  background: #eeebff;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.tk-btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tk-btn-refresh:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.tk-btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Hiệu ứng xoay của icon refresh */
+.tk-spin {
+  animation: tk-anim-spin 1s linear infinite;
+}
+@keyframes tk-anim-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   🗂️ THANH CHUYỂN ĐỔI TABS (CHÍNH)
+   ========================================================================== */
+.tk-tabs-row {
+  display: flex;
+  gap: 8px;
+  background-color: #f1f5f9;
+  padding: 6px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.tk-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  background-color: transparent;
+  color: #64748b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tk-tab-btn:hover {
+  color: #334155;
+}
+
+.tk-tab-btn.active {
+  background-color: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+}
+
+/* ==========================================================================
+   🔍 BỘ LỌC SUB-TAB (THỜI GIAN)
+   ========================================================================== */
+.tk-filter-sub {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px dashed #e2e8f0;
+}
+
+.tk-filter-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.tk-filter-group {
+  display: flex;
+  gap: 6px;
+}
+
+.tk-filter-btn {
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tk-filter-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.tk-filter-btn.active {
+  background-color: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   💰 THẺ HIỂN THỊ TỔNG DOANH THU
+   ========================================================================== */
+.tk-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+  padding: 18px 24px;
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+
+.tk-icon-box {
+  background-color: #16a34a;
+  color: #ffffff;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+}
+
+.tk-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tk-summary-label {
+  font-size: 13px;
+  color: #166534;
+  font-weight: 600;
+}
+
+.tk-summary-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #14532d;
+  margin: 0;
+}
+
+/* ==========================================================================
+   📊 KHUNG BẢNG BÁO CÁO DOANH NGHIỆP
+   ========================================================================== */
+.tk-table-wrapper {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.tk-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.tk-table th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13.5px;
+}
+
+.tk-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.tk-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* ==========================================================================
+   🌱 ĐỊNH DẠNG CHI TIẾT THÀNH PHẦN BÊN TRONG BẢNG
+   ========================================================================== */
+.tk-highlight-text {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.tk-product-img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  display: block;
+}
+
+.tk-phone-badge {
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tk-counter-badge {
+  background-color: #eff6ff;
+  color: #1e4ed8;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.tk-qty-badge {
+  background-color: #f0fdfa;
+  color: #0d9488;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tk-time-badge {
+  background-color: #fff7ed;
+  color: #c2410c;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* Định dạng cột căn biên */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-muted { color: #94a3b8; font-size: 13px; }
+.text-success { color: #16a34a !important; }
+.text-bold { font-weight: 700; }
+
+/* Trạng thái Loading / Empty rỗng */
+.tk-status-box {
+  padding: 48px 24px;
+  text-align: center;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.tk-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  margin: 0 auto 12px auto;
+  animation: tk-anim-spin 0.8s linear infinite;
+}
+
+/* ==========================================================================
+   🔘 NÚT XEM CHI TIẾT TRÊN BẢNG CHÍNH
+   ========================================================================== */
+   .tk-btn-action {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
-    background-color: #ffffff;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    color: #495057;
-    transition: all 0.2s ease;
-  }
-  
-  .tk-btn-refresh:hover {
-    background-color: #f8f9fa;
-    border-color: #adb5bd;
-  }
-  
-  /* --- Thanh Tabs Chuyển đổi chức năng --- */
-  .tk-tabs-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  
-  .tk-tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border: 1px solid #ced4da;
-    background-color: #ffffff;
-    color: #495057;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: all 0.2s ease;
-  }
-  
-  .tk-tab-btn:hover {
     background-color: #f1f5f9;
-    color: #1e293b;
+    color: #4f46e5;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
   
-  .tk-tab-btn.active {
+  .tk-btn-action:hover {
     background-color: #4f46e5;
     color: #ffffff;
     border-color: #4f46e5;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
   }
   
-  /* --- Bộ lọc phụ (Thời gian) --- */
-  .tk-filter-sub {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    background-color: #ffffff;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-  }
-  
-  .tk-filter-label {
-    font-weight: 700;
-    color: #495057;
-    font-size: 14px;
-  }
-  
-  .tk-filter-btn {
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1px solid #ced4da;
-    background-color: #ffffff;
-    color: #495057;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 13px;
-    transition: all 0.2s ease;
-  }
-  
-  .tk-filter-btn:hover {
-    background-color: #f8f9fa;
-  }
-  
-  .tk-filter-btn.active {
-    border-color: #4f46e5;
-    background-color: #eeebff;
-    color: #4f46e5;
-  }
-  
-  /* --- Thẻ hiển thị Doanh thu tổng --- */
-  .tk-summary-card {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
-  
-  .tk-icon-box {
-    padding: 12px;
-    background-color: #eef2ff;
-    border-radius: 50%;
-    color: #4f46e5;
+  /* ==========================================================================
+     🖼️ CẤU TRÚC LỚP PHỦ MODAL POPUP (DRILL-DOWN)
+     ========================================================================== */
+  .tk-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    animation: tkFadeIn 0.2s ease-out;
   }
   
-  .tk-summary-label {
-    color: #6c757d;
-    font-weight: 500;
-  }
-  
-  .tk-summary-value {
-    margin: 4px 0 0 0;
-    font-size: 24px;
-    color: #10b981;
-    font-weight: 700;
-  }
-  
-  /* --- Khung hiển thị Bảng (Table) --- */
-  .tk-table-wrapper {
+  .tk-modal-content {
     background-color: #ffffff;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    overflow-x: auto;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
-  
-  .tk-table {
     width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    min-width: 700px;
+    max-width: 900px;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    animation: tkSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
-  .tk-table thead tr {
+  .tk-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  
+  .tk-modal-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+  }
+  
+  .tk-modal-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  
+  .tk-modal-close:hover {
     background-color: #f1f5f9;
-    border-bottom: 2px solid #e2e8f0;
+    color: #334155;
   }
   
-  .tk-table th {
-    padding: 14px 16px;
-    font-weight: 600;
-    color: #475569;
-    font-size: 14px;
-  }
-  
-  .tk-table td {
-    padding: 14px 16px;
-    color: #1f2937;
-    font-size: 14px;
-  }
-  
-  .tk-table tbody tr {
-    border-bottom: 1px solid #edf2f7;
-    transition: background-color 0.2s ease;
-  }
-  
-  .tk-table tbody tr:hover {
+  .tk-modal-body {
+    padding: 24px;
+    overflow-y: auto;
     background-color: #f8fafc;
   }
   
-  /* --- Trạng thái Loading / Trống --- */
-  .tk-status-message {
-    padding: 40px;
-    text-align: center;
-    color: #6c757d;
-    font-size: 15px;
+  /* ==========================================================================
+     📊 BẢNG DỮ LIỆU TRONG MODAL CHI TIẾT
+     ========================================================================== */
+  .tk-modal-table-container {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
   
-  /* --- Tiện ích văn bản định dạng nhanh --- */
-  .text-center { text-align: center; }
-  .text-bold { font-weight: 700; }
-  .text-success { color: #10b981; font-weight: 700; }
-  .text-primary { color: #4f46e5; font-weight: 700; }
-  .text-muted { color: #6b7280; }
+  .tk-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+  }
   
-  /* Hiệu ứng xoay của nút refresh lúc loading */
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  .tk-modal-table th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
   }
-  .animate-spin {
-    animation: spin 1s linear infinite;
+  
+  .tk-modal-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: top;
   }
+  
+  .tk-code-text {
+    font-family: monospace;
+    background-color: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #0f172a;
+    font-weight: 600;
+  }
+  
+  .tk-user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .tk-user-info span {
+    font-size: 12px;
+    color: #64748b;
+  }
+  
+  .tk-modal-items-list {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tk-modal-items-list li {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .text-primary { color: #4f46e5 !important; font-weight: 700; }
+  .tk-modal-empty { text-align: center; color: #64748b; padding: 40px 0; font-weight: 500; }
+  .tk-modal-loading { text-align: center; color: #4f46e5; padding: 40px 0; font-weight: 600; }
+  
+  /* Hiệu ứng chuyển động mượt mà */
+  @keyframes tkFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes tkSlideUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  /* ==========================================================================
+   📊 CARD CHỨA BIỂU ĐỒ RECHARTS
+   ========================================================================== */
+.tk-chart-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.tk-chart-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #f1f5f9;
+}
+/* Màu nền phân biệt số lượng đơn thành công & bom hàng */
+.tk-counter-badge.success-bg, .tk-qty-badge.success-bg {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.tk-counter-badge.danger-bg, .tk-qty-badge.danger-bg {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-weight: bold;
+}
+
+.tk-counter-badge.muted-bg, .tk-qty-badge.muted-bg {
+  background-color: #f8fafc;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+
+/* Định hình bộ lọc nhỏ trong Modal */
+.tk-modal-filter-tabs {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tk-m-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.tk-m-tab.active {
+  border-bottom-color: #4f46e5;
+  color: #4f46e5 !important;
+}
+
+/* Kiểu badge tình trạng đơn hàng trong modal */
+.m-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.m-badge.badge-success { background-color: #d1fae5; color: #065f46; }
+.m-badge.badge-danger { background-color: #fee2e2; color: #991b1b; }
+
+/* Lý do hủy đơn hàng */
+.tk-failed-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 220px;
+}
+
+.tk-cancel-reason-text {
+  margin: 0;
+  font-size: 12px;
+  color: #ef4444;
+  font-style: italic;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Thẻ định danh tài xế trong modal */
+.tk-shipper-tag {
+  display: inline-block;
+  font-size: 11px;
+  background-color: #eff6ff;
+  color: #1e40af;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  font-weight: 600;
+  border: 1px dashed #bfdbfe;
+}
+
+/* Đơn thất bại thì gạch ngang số tiền để báo không cộng dồn doanh số */
+.text-danger-strike {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.tk-modal-row.status-failed {
+  background-color: #fffafb;
+}
