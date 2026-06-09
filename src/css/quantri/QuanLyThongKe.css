@@ -1,618 +1,343 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+:root {
+  --bg-app: #f4f6fa;
+  --surface-3d: #ffffff;
+  --primary-3d: #4f46e5;
+  --shadow-dark: rgba(163, 177, 198, 0.4);
+  --shadow-light: rgba(255, 255, 255, 0.9);
+}
 
-/* ==========================================================================
-   🧱 CONTAINER CHÍNH
-   ========================================================================== */
-.tk-container {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #ffffff;
+.cube-tk-container {
+  padding: 30px;
+  background: var(--bg-app);
+  min-height: 100vh;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Hiệu ứng Header Khối 3D */
+.cube-header-3d {
+  background: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%);
   padding: 24px;
   border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(149, 157, 165, 0.08);
-  margin: 10px;
+  color: white;
+  box-shadow: 5px 5px 15px var(--shadow-dark), -5px -5px 15px var(--shadow-light);
+  margin-bottom: 25px;
 }
-
-/* ==========================================================================
-   📌 TIÊU ĐỀ TRANG & NÚT LÀM MỚI
-   ========================================================================== */
-.tk-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.tk-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-}
-
-.tk-title-icon {
-  color: #4f46e5;
-  background: #eeebff;
-  padding: 6px;
-  border-radius: 10px;
-}
-
-.tk-btn-refresh {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #ffffff;
-  color: #475569;
-  border: 1px solid #cbd5e1;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tk-btn-refresh:hover:not(:disabled) {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
-  color: #0f172a;
-}
-
-.tk-btn-refresh:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Hiệu ứng xoay của icon refresh */
-.tk-spin {
-  animation: tk-anim-spin 1s linear infinite;
-}
-@keyframes tk-anim-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ==========================================================================
-   🗂️ THANH CHUYỂN ĐỔI TABS (CHÍNH)
-   ========================================================================== */
-.tk-tabs-row {
-  display: flex;
-  gap: 8px;
-  background-color: #f1f5f9;
-  padding: 6px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.tk-tab-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  background-color: transparent;
-  color: #64748b;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tk-tab-btn:hover {
-  color: #334155;
-}
-
-.tk-tab-btn.active {
-  background-color: #ffffff;
-  color: #4f46e5;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
-}
-
-/* ==========================================================================
-   🔍 BỘ LỌC SUB-TAB (THỜI GIAN)
-   ========================================================================== */
-.tk-filter-sub {
+.cube-title-zone {
   display: flex;
   align-items: center;
   gap: 16px;
-  background-color: #f8fafc;
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  border: 1px dashed #e2e8f0;
 }
-
-.tk-filter-label {
+.cube-icon-master {
+  width: 40px;
+  height: 40px;
+}
+.cube-main-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.cube-subtitle {
   font-size: 13px;
-  color: #64748b;
-  font-weight: 600;
+  opacity: 0.8;
 }
 
-.tk-filter-group {
+/* Bộ Lọc Panel 3D Nổi */
+.cube-panel-filter-3d {
+  background: var(--surface-3d);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), 6px 6px 20px var(--shadow-dark);
+  margin-bottom: 25px;
+}
+.cube-filter-grid {
   display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.cube-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 280px;
+}
+.cube-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
   gap: 6px;
 }
 
-.tk-filter-btn {
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
-  color: #475569;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+/* Trình Dropdown chọn nhiều mã tùy biến */
+.cube-select-custom-container {
+  position: relative;
+  width: 100%;
 }
-
-.tk-filter-btn:hover {
-  background-color: #f1f5f9;
-}
-
-.tk-filter-btn.active {
-  background-color: #0f172a;
-  border-color: #0f172a;
-  color: #ffffff;
-}
-
-/* ==========================================================================
-   💰 THẺ HIỂN THỊ TỔNG DOANH THU
-   ========================================================================== */
-.tk-summary-card {
+.cube-select-trigger {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-height: 44px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 1px solid #bbf7d0;
-  padding: 18px 24px;
-  border-radius: 14px;
-  margin-bottom: 24px;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.06);
+}
+.cube-tags-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cube-tag-badge {
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 2px solid #c7d2fe;
+}
+.cube-tag-close {
+  cursor: pointer;
+  color: #ef4444;
+}
+.cube-dropdown-menu {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  z-index: 100;
+  padding: 12px;
+}
+.cube-search-box-inside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.cube-search-box-inside input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 13px;
+}
+.cube-options-list {
+  max-height: 180px;
+  overflow-y: auto;
+}
+.cube-option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.cube-option-item:hover {
+  background: #f1f5f9;
+}
+.promo-code-bold {
+  font-weight: 700;
+  display: block;
+  font-size: 13px;
+}
+.promo-desc-sub {
+  font-size: 11px;
+  color: #64748b;
 }
 
-.tk-icon-box {
-  background-color: #16a34a;
-  color: #ffffff;
-  width: 48px;
-  height: 48px;
+/* Ô nhập số phần trăm 3D */
+.cube-input-3d-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.cube-input-field {
+  width: 100%;
+  height: 44px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0 40px 0 12px;
+  font-weight: 700;
+  font-size: 15px;
+  outline: none;
+}
+.cube-input-unit {
+  position: absolute;
+  right: 15px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+/* Nút Submit Khối Nổi 3D */
+.cube-btn-submit-3d {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 0 24px;
+  height: 44px;
+  border-radius: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border-bottom: 4px solid #047857;
+  transition: all 0.1s ease;
+}
+.cube-btn-submit-3d:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+
+/* Cụm Thẻ Chỉ Số Khối 3D (Metrics) */
+.cube-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+.cube-card-metric {
+  background: var(--surface-3d);
+  border-radius: 16px;
+  padding: 4px;
+  box-shadow: 8px 8px 20px var(--shadow-dark);
+  border-bottom: 5px solid transparent;
+}
+.cube-card-metric.total-revenue { border-bottom-color: #3b82f6; }
+.cube-card-metric.commission-earned { border-bottom-color: #f59e0b; }
+.cube-card-metric.discount-given { border-bottom-color: #ec4899; }
+
+.cube-card-inner {
+  background: #ffffff;
+  padding: 20px;
   border-radius: 12px;
+}
+.cube-metric-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+.cube-metric-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 12px 0 6px 0;
+}
+.cube-metric-desc {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Bảng Chi Tiết Không Gian */
+.cube-table-container-3d {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 8px 8px 24px var(--shadow-dark);
+  overflow: hidden;
+}
+.cube-table-header-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-bottom: 2px solid #e2e8f0;
+}
+.cube-tab-trigger {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
-}
-
-.tk-summary-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.tk-summary-label {
-  font-size: 13px;
-  color: #166534;
-  font-weight: 600;
-}
-
-.tk-summary-value {
-  font-size: 24px;
-  font-weight: 800;
-  color: #14532d;
-  margin: 0;
-}
-
-/* ==========================================================================
-   📊 KHUNG BẢNG BÁO CÁO DOANH NGHIỆP
-   ========================================================================== */
-.tk-table-wrapper {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.tk-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 14px;
-}
-
-.tk-table th {
-  background-color: #f8fafc;
-  color: #475569;
-  font-weight: 700;
-  padding: 14px 18px;
-  border-bottom: 1px solid #e2e8f0;
-  font-size: 13.5px;
-}
-
-.tk-table td {
-  padding: 14px 18px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  vertical-align: middle;
-}
-
-.tk-table tbody tr:hover {
-  background-color: #f8fafc;
-}
-
-/* ==========================================================================
-   🌱 ĐỊNH DẠNG CHI TIẾT THÀNH PHẦN BÊN TRONG BẢNG
-   ========================================================================== */
-.tk-highlight-text {
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.tk-product-img {
-  width: 44px;
-  height: 44px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
-  display: block;
-}
-
-.tk-phone-badge {
-  background-color: #f1f5f9;
-  color: #475569;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.tk-counter-badge {
-  background-color: #eff6ff;
-  color: #1e4ed8;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.tk-qty-badge {
-  background-color: #f0fdfa;
-  color: #0d9488;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.tk-time-badge {
-  background-color: #fff7ed;
-  color: #c2410c;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-weight: 700;
-}
-
-/* Định dạng cột căn biên */
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
-.text-muted { color: #94a3b8; font-size: 13px; }
-.text-success { color: #16a34a !important; }
-.text-bold { font-weight: 700; }
-
-/* Trạng thái Loading / Empty rỗng */
-.tk-status-box {
-  padding: 48px 24px;
-  text-align: center;
-  font-size: 14.5px;
-  font-weight: 500;
-  color: #64748b;
-}
-
-.tk-loading-spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #4f46e5;
-  border-radius: 50%;
-  margin: 0 auto 12px auto;
-  animation: tk-anim-spin 0.8s linear infinite;
-}
-
-/* ==========================================================================
-   🔘 NÚT XEM CHI TIẾT TRÊN BẢNG CHÍNH
-   ========================================================================== */
-   .tk-btn-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #f1f5f9;
-    color: #4f46e5;
-    border: 1px solid #e2e8f0;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12.5px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .tk-btn-action:hover {
-    background-color: #4f46e5;
-    color: #ffffff;
-    border-color: #4f46e5;
-    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
-  }
-  
-  /* ==========================================================================
-     🖼️ CẤU TRÚC LỚP PHỦ MODAL POPUP (DRILL-DOWN)
-     ========================================================================== */
-  .tk-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 20px;
-    animation: tkFadeIn 0.2s ease-out;
-  }
-  
-  .tk-modal-content {
-    background-color: #ffffff;
-    width: 100%;
-    max-width: 900px;
-    border-radius: 16px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    display: flex;
-    flex-direction: column;
-    max-height: 85vh;
-    animation: tkSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  
-  .tk-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid #f1f5f9;
-  }
-  
-  .tk-modal-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: #0f172a;
-    margin: 0;
-  }
-  
-  .tk-modal-close {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-  }
-  
-  .tk-modal-close:hover {
-    background-color: #f1f5f9;
-    color: #334155;
-  }
-  
-  .tk-modal-body {
-    padding: 24px;
-    overflow-y: auto;
-    background-color: #f8fafc;
-  }
-  
-  /* ==========================================================================
-     📊 BẢNG DỮ LIỆU TRONG MODAL CHI TIẾT
-     ========================================================================== */
-  .tk-modal-table-container {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
-  
-  .tk-modal-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-    text-align: left;
-  }
-  
-  .tk-modal-table th {
-    background-color: #f1f5f9;
-    color: #475569;
-    font-weight: 700;
-    padding: 12px 16px;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  
-  .tk-modal-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-    vertical-align: top;
-  }
-  
-  .tk-code-text {
-    font-family: monospace;
-    background-color: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #0f172a;
-    font-weight: 600;
-  }
-  
-  .tk-user-info {
-    display: flex;
-    flex-direction: column;
-  }
-  .tk-user-info span {
-    font-size: 12px;
-    color: #64748b;
-  }
-  
-  .tk-modal-items-list {
-    margin: 0;
-    padding-left: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .tk-modal-items-list li {
-    font-size: 13px;
-    font-weight: 500;
-  }
-  
-  .text-primary { color: #4f46e5 !important; font-weight: 700; }
-  .tk-modal-empty { text-align: center; color: #64748b; padding: 40px 0; font-weight: 500; }
-  .tk-modal-loading { text-align: center; color: #4f46e5; padding: 40px 0; font-weight: 600; }
-  
-  /* Hiệu ứng chuyển động mượt mà */
-  @keyframes tkFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes tkSlideUp {
-    from { transform: translateY(15px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  /* ==========================================================================
-   📊 CARD CHỨA BIỂU ĐỒ RECHARTS
-   ========================================================================== */
-.tk-chart-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.tk-chart-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: #0f172a;
-  margin-top: 0;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed #f1f5f9;
-}
-/* Màu nền phân biệt số lượng đơn thành công & bom hàng */
-.tk-counter-badge.success-bg, .tk-qty-badge.success-bg {
-  background-color: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-}
-
-.tk-counter-badge.danger-bg, .tk-qty-badge.danger-bg {
-  background-color: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  font-weight: bold;
-}
-
-.tk-counter-badge.muted-bg, .tk-qty-badge.muted-bg {
-  background-color: #f8fafc;
-  color: #94a3b8;
-  border: 1px solid #e2e8f0;
-}
-
-/* Định hình bộ lọc nhỏ trong Modal */
-.tk-modal-filter-tabs {
-  display: flex;
-  gap: 12px;
-  padding: 0 24px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.tk-m-tab {
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  padding: 8px 16px;
-  font-weight: 700;
-  font-size: 13.5px;
+  gap: 8px;
   cursor: pointer;
   color: #64748b;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
-
-.tk-m-tab.active {
-  border-bottom-color: #4f46e5;
-  color: #4f46e5 !important;
+.cube-tab-trigger.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: inset 0 3px 0 currentColor;
 }
+.cube-tab-trigger.tab-success.active { color: #10b981; }
+.cube-tab-trigger.tab-failed.active { color: #ef4444; }
 
-/* Kiểu badge tình trạng đơn hàng trong modal */
-.m-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 6px;
+.cube-data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.cube-data-table th {
+  background: #f8fafc;
+  padding: 14px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
+  color: #64748b;
+  text-align: left;
 }
-
-.m-badge.badge-success { background-color: #d1fae5; color: #065f46; }
-.m-badge.badge-danger { background-color: #fee2e2; color: #991b1b; }
-
-/* Lý do hủy đơn hàng */
-.tk-failed-wrapper {
+.cube-data-table td {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+.cube-code-text {
+  color: #4f46e5;
+}
+.cube-cell-customer {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  max-width: 220px;
 }
+.c-name { font-weight: 600; color: #334155;}
+.c-phone { font-size: 11px; color: #94a3b8;}
 
-.tk-cancel-reason-text {
-  margin: 0;
-  font-size: 12px;
-  color: #ef4444;
-  font-style: italic;
-  line-height: 1.4;
-  white-space: normal;
-  word-break: break-word;
-}
-
-/* Thẻ định danh tài xế trong modal */
-.tk-shipper-tag {
-  display: inline-block;
+.cube-table-promo-badge {
+  background: #ef4444;
+  color: white;
   font-size: 11px;
-  background-color: #eff6ff;
-  color: #1e40af;
+  font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  margin-top: 4px;
-  font-weight: 600;
-  border: 1px dashed #bfdbfe;
+}
+.cube-table-promo-badge.style-failed {
+  background: #64748b;
 }
 
-/* Đơn thất bại thì gạch ngang số tiền để báo không cộng dồn doanh số */
-.text-danger-strike {
-  color: #94a3b8;
-  text-decoration: line-through;
-}
+.text-discount { color: #ef4444; font-weight: 600;}
+.text-grand-total { color: #10b981; font-weight: 700;}
+.text-strike { text-decoration: line-through; color: #94a3b8; }
 
-.tk-modal-row.status-failed {
-  background-color: #fffafb;
+.cube-status-pill {
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
 }
+.cube-status-pill.success { background: #d1fae5; color: #065f46; }
+.cube-status-pill.failed { background: #fee2e2; color: #991b1b; }
+
+/* Utilities */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.cube-empty-row { text-align: center; padding: 40px !important; color: #94a3b8; }
+.cube-spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(30deg); } }

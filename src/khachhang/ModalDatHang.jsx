@@ -24,9 +24,9 @@ const ModalDatHang = ({
   const [thongBao, setThongBao] = useState({ kieu: '', noiDung: '' });
   const [thongTinKhach, setThongTinKhach] = useState(null);
 
-  // --- State phục vụ cho tính năng Danh sách Mã giảm giá từ CSDL ---
-  const [danhSachKhuyenMai, setDanhSachKhuyenMai] = useState([]); 
-  const [idMaGiamGiaChon, setIdMaGiamGiaChon] = useState(''); 
+  // --- 🛠️ State phục vụ cho tính năng NHẬP MÃ GIẢM GIÁ ---
+  const [maGiamGiaNhap, setMaGiamGiaNhap] = useState(''); 
+  const [loadingKiemTraMa, setLoadingKiemTraMa] = useState(false); 
   const [promotionApDung, setPromotionApDung] = useState(null); 
 
   const khachHienThi = thongTinKhach || nguoiDung;
@@ -48,7 +48,18 @@ const ModalDatHang = ({
     [gioHang]
   );
 
-  // Tính số tiền được giảm giá dựa trên mã được áp dụng
+  // 💡 TỰ ĐỘNG KIỂM TRA LẠI: Nếu khách hàng thay đổi số lượng giỏ hàng khiến tổng tiền nhỏ hơn min_order_value thì hủy mã tự động
+  useEffect(() => {
+    if (promotionApDung && promotionApDung.min_order_value && tongTienHang < promotionApDung.min_order_value) {
+      setPromotionApDung(null);
+      setThongBao({
+        kieu: 'warn',
+        noiDung: `Mã giảm giá đã tự động gỡ do tổng tiền hàng thấp hơn mức tối thiểu ${formatTien(promotionApDung.min_order_value)}!`
+      });
+    }
+  }, [tongTienHang, promotionApDung]);
+
+  // Tính số tiền được giảm giá dựa trên mã được áp dụng thành công
   const soTienGiam = useMemo(() => {
     if (!promotionApDung) return 0;
     return Math.min(tongTienHang, promotionApDung.discount_value || 0);
@@ -62,7 +73,7 @@ const ModalDatHang = ({
       ? Math.max(0, Number(customerCash) - tongThanhToan)
       : 0;
 
-  // 💡 BỔ SUNG: Lắng nghe sự kiện nút ESC để đóng modal nhanh
+  // Lắng nghe sự kiện nút ESC để đóng modal nhanh
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -71,53 +82,64 @@ const ModalDatHang = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // 1. Tải danh sách mã giảm giá hợp lệ từ CSDL khi mở modal
-  useEffect(() => {
-    if (!isOpen) return;
-
-    fetch(`${API_URL}/api/khachhang/khuyenmai/active`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success && Array.isArray(result.data)) {
-          setDanhSachKhuyenMai(result.data);
-        } else {
-          setDanhSachKhuyenMai([]);
-        }
-      })
-      .catch((err) => {
-        console.error("Lỗi lấy danh sách khuyến mãi:", err);
-        setDanhSachKhuyenMai([]);
-      });
-  }, [isOpen]);
-
-  // 2. Tự động áp dụng và tính toán lại khi người dùng thay đổi lựa chọn trong thẻ select
-  const handleThayDoiMaGiamGia = (e) => {
-    const selectedId = e.target.value;
-    setIdMaGiamGiaChon(selectedId);
-    setCustomerCash(''); 
-
-    if (!selectedId) {
-      setPromotionApDung(null);
-      setThongBao({ kieu: '', noiDung: '' });
+  // 🛠️ HÀM XỬ LÝ KIỂM TRA MÃ GIẢM GIÁ KHI NGƯỜI DÙNG BẤM NÚT "ÁP DỤNG"
+  const handleApDungMaGiamGia = async () => {
+    if (!maGiamGiaNhap.trim()) {
+      setThongBao({ kieu: 'loi', noiDung: 'Vui lòng nhập mã giảm giá!' });
       return;
     }
 
-    const promo = danhSachKhuyenMai.find((item) => item._id === selectedId);
-    if (promo) {
-      // 💡 BỔ SUNG KIỂM TRA: Đơn hàng đủ giá trị tối thiểu chưa (nếu DB có trường min_order_value)
-      if (promo.min_order_value && tongTienHang < promo.min_order_value) {
-        setPromotionApDung(null);
-        setIdMaGiamGiaChon('');
-        setThongBao({ 
-          kieu: 'loi', 
-          noiDung: `Mã ${promo.code} yêu cầu đơn hàng tối thiểu từ ${formatTien(promo.min_order_value)}!` 
-        });
-        return;
-      }
+    setLoadingKiemTraMa(true);
+    setThongBao({ kieu: '', noiDung: '' });
+    setCustomerCash(''); 
 
-      setPromotionApDung(promo);
-      setThongBao({ kieu: 'ok', noiDung: `Đã chọn mã: ${promo.code} (Giảm ${formatTien(promo.discount_value)})` });
+    try {
+      const res = await fetch(`${API_URL}/api/khachhang/khuyenmai/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          code: maGiamGiaNhap.trim(),
+          total_items_amount: tongTienHang 
+        }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.success && result.data) {
+        const promo = result.data;
+        
+        if (promo.min_order_value && tongTienHang < promo.min_order_value) {
+          setPromotionApDung(null);
+          setThongBao({ 
+            kieu: 'loi', 
+            noiDung: `Mã ${promo.code} yêu cầu đơn hàng tối thiểu từ ${formatTien(promo.min_order_value)}!` 
+          });
+          return;
+        }
+
+        setPromotionApDung(promo);
+        setThongBao({ 
+          kieu: 'ok', 
+          noiDung: `Áp dụng mã thành công: ${promo.code} (Giảm ${formatTien(promo.discount_value)})` 
+        });
+      } else {
+        setPromotionApDung(null);
+        setThongBao({ kieu: 'loi', noiDung: result.message || 'Mã giảm giá không tồn tại hoặc đã hết hạn!' });
+      }
+    } catch (err) {
+      console.error("Lỗi áp dụng mã:", err);
+      setPromotionApDung(null);
+      setThongBao({ kieu: 'loi', noiDung: 'Lỗi kết nối hệ thống kiểm tra mã!' });
+    } finally {
+      setLoadingKiemTraMa(false);
     }
+  };
+
+  const handleHuyMaGiamGia = () => {
+    setPromotionApDung(null);
+    setMaGiamGiaNhap('');
+    setCustomerCash('');
+    setThongBao({ kieu: '', noiDung: '' });
   };
 
   const handleThayDoiPhuongThucThanhToan = (method) => {
@@ -147,7 +169,7 @@ const ModalDatHang = ({
     setThongBao({ kieu: '', noiDung: '' });
     setPhiShip(null);
     setThongTinKhach(null);
-    setIdMaGiamGiaChon('');
+    setMaGiamGiaNhap('');
     setPromotionApDung(null);
 
     const lat = diaChiGiaoHang?.latitude;
@@ -241,11 +263,12 @@ const ModalDatHang = ({
       phone: khachHienThi?.phone || '',
     };
 
+    // 💡 ĐÃ SỬA: Biến promotion_code truyền đi bắt buộc phải là chuỗi chữ kí tự (String) do người dùng gõ
     const orderPayloadBase = {
       order_type: 'online',
       user_id: userId,
       items,
-      promotion_code: promotionApDung?._id || null, 
+      promotion_code: promotionApDung ? promotionApDung.code : null, 
       discount_amount: soTienGiam,
       products_subtotal: tongTienHang,
       shipping_fee: phiShip?.shipping_fee ?? 0,
@@ -267,7 +290,6 @@ const ModalDatHang = ({
             buyerName: khachHienThi?.full_name || '',
             buyerPhone: khachHienThi?.phone || '',
             buyerEmail: khachHienThi?.email || nguoiDung?.email || '',
-            promotion_code: promotionApDung?._id || null,
           }),
         });
         const payosData = await payosRes.json();
@@ -289,7 +311,6 @@ const ModalDatHang = ({
           ...orderPayloadBase,
           payment_method: 'CASH',
           customer_cash: Number(customerCash),
-          promotion_code: promotionApDung?._id || null,
         }),
       });
       const data = await res.json();
@@ -380,54 +401,83 @@ const ModalDatHang = ({
           </div>
         </section>
 
-        {/* KHU VỰC CHỌN MÃ GIẢM GIÁ TỪ CSDL */}
+        {/* KHU VỰC NHẬP MÃ GIẢM GIÁ */}
         <section className="mdh-section mdh-promo-section" style={{ borderTop: '1px dashed #e2e8f0', paddingTop: '15px' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Ticket size={18} color="#4f46e5" /> Chọn mã khuyến mãi hợp lệ
+            <Ticket size={18} color="#4f46e5" /> Mã khuyến mãi
           </h3>
-          <div style={{ marginTop: '8px' }}>
-            <select
-              value={idMaGiamGiaChon}
-              onChange={handleThayDoiMaGiamGia}
+          <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+            <input
+              type="text"
+              placeholder="Nhập mã giảm giá của bạn..."
+              value={maGiamGiaNhap}
+              onChange={(e) => setMaGiamGiaNhap(e.target.value)}
+              disabled={promotionApDung !== null || loadingKiemTraMa}
               style={{
-                width: '100%',
+                flex: 1,
                 padding: '10px 14px',
                 border: '1px solid #cbd5e1',
                 borderRadius: '8px',
                 fontWeight: '600',
                 fontSize: '0.95rem',
-                backgroundColor: '#fff',
-                cursor: 'pointer'
+                textTransform: 'uppercase', 
+                backgroundColor: promotionApDung ? '#f1f5f9' : '#fff'
               }}
-            >
-              <option value="">-- Bấm vào đây để chọn mã giảm giá --</option>
-              {danhSachKhuyenMai.map((item) => {
-                // 💡 TỐI ƯU UX: Đánh dấu mã không đủ điều kiện đơn hàng tối thiểu bằng text trực quan
-                const khongDuDieuKien = item.min_order_value && tongTienHang < item.min_order_value;
-                return (
-                  <option key={item._id} value={item._id} disabled={khongDuDieuKien}>
-                    {item.code} [Giảm {formatTien(item.discount_value)}] 
-                    {khongDuDieuKien ? ` (Đơn tối thiểu ${formatTien(item.min_order_value)})` : ''}
-                  </option>
-                );
-              })}
-            </select>
-
-            {/* HIỂN THỊ TÊN MÔ TẢ CHI TIẾT CỦA MÃ KHUYẾN MÃI ĐANG CHỌN */}
-            {promotionApDung && promotionApDung.description && (
-              <div style={{ 
-                marginTop: '8px', 
-                padding: '8px 12px', 
-                backgroundColor: '#f8fafc', 
-                borderLeft: '4px solid #4f46e5',
-                borderRadius: '4px',
-                fontSize: '0.88rem',
-                color: '#475569'
-              }}>
-                <strong>Mô tả:</strong> {promotionApDung.description}
-              </div>
+            />
+            {promotionApDung ? (
+              <button
+                type="button"
+                onClick={handleHuyMaGiamGia}
+                style={{
+                  padding: '10px 16px',
+                  backgroundColor: '#ef4444',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Hủy mã
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleApDungMaGiamGia}
+                disabled={loadingKiemTraMa || gioHang.length === 0}
+                style={{
+                  padding: '10px 16px',
+                  backgroundColor: '#4f46e5',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                {loadingKiemTraMa ? <LoaderCircle size={16} className="mdh-spin" /> : 'Áp dụng'}
+              </button>
             )}
           </div>
+
+          {promotionApDung && promotionApDung.description && (
+            <div style={{ 
+              marginTop: '8px', 
+              padding: '8px 12px', 
+              backgroundColor: '#f8fafc', 
+              borderLeft: '4px solid #10b981',
+              borderRadius: '4px',
+              fontSize: '0.88rem',
+              color: '#475569'
+            }}>
+              <strong>Mô tả ưu đãi:</strong> {promotionApDung.description}
+            </div>
+          )}
         </section>
 
         {/* ĐỊA CHỈ NHẬN HÀNG */}

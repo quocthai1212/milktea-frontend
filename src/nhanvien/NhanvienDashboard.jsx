@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import '../css/nhanvien/NhanvienDashboard.css';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const NhanvienDashboard = () => {
   const navigate = useNavigate();
@@ -128,8 +128,8 @@ const NhanvienDashboard = () => {
         body: JSON.stringify({
           staff_id: nhanVien?._id,
           payment_method: phuongThucThanhToan,
-          payment_status: 'PAID', // Đặt tại quầy thông thường mặc định đã thu tiền trực tiếp
-          status: 'preparing',    // Đặt tại quầy bỏ qua bước pending, chuyển thẳng xuống pha chế
+          payment_status: 'PAID', 
+          status: 'preparing',    
           total_amount: tongTien,
           items: [
             {
@@ -151,7 +151,6 @@ const NhanvienDashboard = () => {
       if (data.success || response.ok) {
         hienThongBao('🎉 Tạo đơn hàng thành công! Đã chuyển xuống mục Đang chế biến.', 'success');
         setShowPosModal(false);
-        // Reset form
         setTenMonPos('');
         setGiaPos('');
         setSoLuongPos(1);
@@ -190,6 +189,13 @@ const NhanvienDashboard = () => {
     return danhSachDonHang.filter(o => o.status === status).length;
   };
 
+  const kíchHoạtHủyĐơnNhanh = (orderId) => {
+    const lyDo = prompt('Nhập lý do hủy hóa đơn này:');
+    if (lyDo !== null && lyDo.trim() !== '') {
+      handleCapNhatTrangThai(orderId, 'cancelled', lyDo);
+    }
+  };
+
   const danhSachHienThi = danhSachDonHang.filter(o => o.status === filterStatus);
 
   return (
@@ -203,7 +209,6 @@ const NhanvienDashboard = () => {
         </div>
         
         <div className="nv-user-info">
-          {/* ✨ NÚT ĐẶT HÀNG TẠI QUẦY (MỚI THÊM) */}
           <button className="nv-btn-pos" onClick={() => setShowPosModal(true)}>
             <ShoppingBag size={16} /> <span>Đặt hàng tại quầy (POS)</span>
           </button>
@@ -230,7 +235,7 @@ const NhanvienDashboard = () => {
         </div>
       )}
 
-      {/* ✨ CỬA SỔ POPUP MODAL ĐẶT HÀNG TẠI QUẦY */}
+      {/* CỬA SỔ POPUP MODAL ĐẶT HÀNG TẠI QUẦY */}
       {showPosModal && (
         <div className="nv-modal-overlay">
           <div className="nv-modal-pos">
@@ -253,7 +258,7 @@ const NhanvienDashboard = () => {
               </div>
               <div className="nv-form-row">
                 <div className="nv-form-group">
-                  <label>Đơn giá (đđ):</label>
+                  <label>Đơn giá (đ):</label>
                   <input 
                     type="number" 
                     placeholder="Ví dụ: 45000" 
@@ -400,41 +405,63 @@ const NhanvienDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="nv-card-actions">
+                  {/* KHU VỰC NÚT ĐIỀU KHIỂN TOÀN NĂNG CHO NHÂN VIÊN */}
+                  <div className="nv-card-actions-vertical">
+                    
+                    {/* 1. Luồng xử lý đơn CHỜ XÁC NHẬN */}
                     {donHang.status === 'pending' && (
-                      <>
+                      <div className="nv-action-buttons-group">
                         <button className="nv-btn-action accept" onClick={() => handleCapNhatTrangThai(donHang._id, 'preparing')}>
-                          <CheckCircle size={15} /> Xác nhận đơn & Pha chế
+                          <CheckCircle size={14} /> Xác nhận & Chế biến
                         </button>
-                        <button className="nv-btn-action cancel" onClick={() => {
-                          const lyDo = prompt('Nhập lý do hủy đơn của khách:');
-                          if (lyDo !== null && lyDo.trim() !== '') {
-                            handleCapNhatTrangThai(donHang._id, 'cancelled', lyDo);
-                          }
-                        }}>
-                          Hủy đơn
+                        <button className="nv-btn-action success-direct" onClick={() => handleCapNhatTrangThai(donHang._id, 'completed')}>
+                          <PackageCheck size={14} /> Hoàn thành nhanh (Giao luôn)
                         </button>
-                      </>
+                        <button className="nv-btn-action cancel" onClick={() => kíchHoạtHủyĐơnNhanh(donHang._id)}>
+                          Hủy đơn hàng
+                        </button>
+                      </div>
                     )}
 
+                    {/* 2. Luồng xử lý đơn ĐANG PHA CHẾ */}
                     {donHang.status === 'preparing' && (
-                      <button className="nv-btn-action ship" onClick={() => handleCapNhatTrangThai(donHang._id, 'shipping')}>
-                        <Truck size={15} /> Giao hàng cho Shipper
-                      </button>
+                      <div className="nv-action-buttons-group">
+                        <button className="nv-btn-action ship" onClick={() => handleCapNhatTrangThai(donHang._id, 'shipping')}>
+                          <Truck size={14} /> Giao cho Shipper
+                        </button>
+                        <button className="nv-btn-action success-direct" onClick={() => handleCapNhatTrangThai(donHang._id, 'completed')}>
+                          <PackageCheck size={14} /> Đã xong & Giao khách luôn
+                        </button>
+                        <button className="nv-btn-action cancel" onClick={() => kíchHoạtHủyĐơnNhanh(donHang._id)}>
+                          Hủy đơn hàng
+                        </button>
+                      </div>
                     )}
 
-                    {(donHang.status === 'shipping' || donHang.status === 'completed' || donHang.status === 'cancelled') && (
+                    {/* 3. Luồng xử lý đơn ĐANG GIAO HÀNG */}
+                    {donHang.status === 'shipping' && (
+                      <div className="nv-action-buttons-group">
+                        <button className="nv-btn-action accept" onClick={() => handleCapNhatTrangThai(donHang._id, 'completed')}>
+                          <PackageCheck size={14} /> Xác nhận Giao thành công
+                        </button>
+                        <button className="nv-btn-action cancel" onClick={() => kíchHoạtHủyĐơnNhanh(donHang._id)}>
+                          Khách bùng/Hủy đơn hàng
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 4. Các trạng thái đã ĐÓNG lệnh (Hoàn thành / Đã hủy) */}
+                    {(donHang.status === 'completed' || donHang.status === 'cancelled') && (
                       <div className="nv-closed-history-box">
                         <span className="nv-text-disabled">
-                          {donHang.status === 'shipping' 
-                            ? '🚚 Đơn hàng đang đi giao (Chỉ xem lịch trình)' 
-                            : '🔒 Đơn hàng đã đóng lịch sử xử lý'}
+                          {donHang.status === 'completed' ? '🔒 Đơn hàng đã hoàn thành' : '❌ Đơn hàng đã hủy bỏ'}
                         </span>
                         {donHang.cancel_reason && (
                           <p className="nv-text-reason">Lý do hủy: {donHang.cancel_reason}</p>
                         )}
                       </div>
                     )}
+
                   </div>
 
                 </div>

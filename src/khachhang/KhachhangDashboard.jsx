@@ -96,7 +96,7 @@ const KhachhangDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [donChiTiet]);
+  }, []);
 
   useEffect(() => {
     const roleId = Number(localStorage.getItem('role_id'));

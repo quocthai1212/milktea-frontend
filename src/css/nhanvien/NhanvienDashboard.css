@@ -4,6 +4,7 @@
   --shipping-color: #9c27b0;
   --completed-color: #4caf50;
   --cancelled-color: #f44336;
+  --success-direct-color: #2e7d32; /* Màu xanh đậm cho nút hoàn thành nhanh */
 }
 
 .nv-dashboard-container {
@@ -14,7 +15,9 @@
   flex-direction: column;
 }
 
-/* TOPBAR */
+/* ==========================================================================
+   TOPBAR
+   ========================================================================== */
 .nv-topbar {
   background-color: #ffffff;
   height: 65px;
@@ -87,13 +90,13 @@
 .nv-btn-logout { background: #fff1f0; color: #ff4d4f; border-color: #ffccc7; }
 .nv-btn-logout:hover { background: #ffccc7; }
 
-/* LAYOUT MAIN */
+/* ==========================================================================
+   LAYOUT MAIN & SIDEBAR
+   ========================================================================== */
 .nv-main-layout {
   display: flex;
   flex: 1;
 }
-
-/* SIDEBAR */
 .nv-sidebar {
   width: 260px;
   background: #fff;
@@ -148,7 +151,9 @@
 .bg-completed { background: var(--completed-color); }
 .bg-cancelled { background: var(--cancelled-color); }
 
-/* CONTENT AREA */
+/* ==========================================================================
+   CONTENT AREA & GRID
+   ========================================================================== */
 .nv-content-area {
   flex: 1;
   padding: 24px;
@@ -164,7 +169,6 @@
 .nv-content-header h3 { margin: 0; font-size: 20px; color: #222; }
 .nv-time-sync { font-size: 12px; color: #999; font-style: italic; }
 
-/* ORDERS GRID & CARD */
 .nv-orders-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -186,6 +190,7 @@
 .nv-order-card.border-completed { border-top-color: var(--completed-color); }
 .nv-order-card.border-cancelled { border-top-color: var(--cancelled-color); }
 
+/* CARD SECTIONS */
 .nv-card-header {
   display: flex;
   justify-content: space-between;
@@ -249,35 +254,99 @@
 .nv-total-amount { font-size: 16px; font-weight: bold; color: #ff4d4f; }
 .nv-payment-status { font-weight: 500; font-size: 12px; }
 
-/* ACTIONS BUTTONS */
-.nv-card-actions {
-  display: flex;
-  gap: 10px;
+/* ==========================================================================
+   ✨ KHU VỰC ĐIỀU KHIỂN NÚT BẤM TOÀN NĂNG (CẬP NHẬT MỚI)
+   ========================================================================== */
+.nv-card-actions-vertical {
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f1f1;
 }
+
+.nv-action-buttons-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Dàn xếp các nút theo chiều dọc ôm khít card */
+}
+
 .nv-btn-action {
-  flex: 1;
-  padding: 10px;
+  width: 100%;
+  padding: 10px 14px;
   border-radius: 6px;
   border: none;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  transition: opacity 0.2s;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
-.nv-btn-action:hover { opacity: 0.9; }
-.nv-btn-action.accept { background: var(--pending-color); color: #fff; }
-.nv-btn-action.ship { background: var(--preparing-color); color: #fff; }
-.nv-btn-action.complete { background: var(--completed-color); color: #fff; }
-.nv-btn-action.cancel { background: #fff; color: #555; border: 1px solid #ccc; max-width: 80px; }
-.nv-text-disabled { text-align: center; font-size: 12px; color: #aaa; width: 100%; display: block; font-style: italic; }
 
-/* OTHER UTILITIES */
+.nv-btn-action:shadow {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Định nghĩa màu sắc cụ thể cho từng loại quyền thao tác */
+.nv-btn-action.accept { 
+  background-color: var(--pending-color); 
+  color: #fff; 
+}
+.nv-btn-action.ship { 
+  background-color: var(--preparing-color); 
+  color: #fff; 
+}
+
+/* Nút Ép Hoàn Thành Đơn lập tức */
+.nv-btn-action.success-direct {
+  background-color: var(--success-direct-color);
+  color: #ffffff;
+}
+
+/* Nút Hủy Đơn Đa Giai Đoạn */
+.nv-btn-action.cancel { 
+  background-color: #fff; 
+  color: var(--cancelled-color); 
+  border: 1px solid #ffa39e;
+}
+.nv-btn-action.cancel:hover {
+  background-color: #fff1f0;
+}
+
+.nv-btn-action:hover { 
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Khu vực hiển thị thông tin khi đơn đã đóng lệnh */
+.nv-closed-history-box {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+}
+.nv-text-disabled { 
+  font-size: 12px; 
+  color: #8c8c8c; 
+  font-weight: 500;
+  display: block; 
+  font-style: italic; 
+}
+.nv-text-reason {
+  margin: 6px 0 0 0;
+  font-size: 12px;
+  color: var(--cancelled-color);
+  text-align: left;
+  background: #fff1f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid var(--cancelled-color);
+}
+
+/* ==========================================================================
+   OTHER UTILITIES & MODAL POS
+   ========================================================================== */
 .nv-toast {
   position: fixed;
   top: 20px;
