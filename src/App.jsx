@@ -28,10 +28,6 @@ function App() {
         {/* Trang chủ */}
         <Route path="/" element={<TrangChu />} />
 
-        {/* Alias trang chủ */}
-        <Route path="/TrangChu" element={<Navigate to="/" replace />} />
-        <Route path="/trang-chu" element={<Navigate to="/" replace />} />
-        <Route path="/trangchu" element={<Navigate to="/" replace />} />
 
         {/* Auth */}
         <Route path="/login" element={<DangNhap />} />
