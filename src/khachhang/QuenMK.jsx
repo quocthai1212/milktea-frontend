@@ -30,7 +30,7 @@ const QuenMK = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('${API_URL}/api/khachhang/quenmk/gui-otp', { email });
+            const response = await axios.post(`${API_URL}/api/khachhang/quenmk/gui-otp`, { email });
             if (response.data.success) {
                 showAlert('success', response.data.message);
                 setStep(2); 
@@ -73,7 +73,7 @@ const QuenMK = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('${API_URL}/api/khachhang/quenmk/xac-nhan', {
+            const response = await axios.post(`${API_URL}/api/khachhang/quenmk/xac-nhan`, {
                 email,
                 otp,
                 newPassword
