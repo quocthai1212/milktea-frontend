@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, KeyRound, Mail, ShieldCheck, Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 const QuenMK = () => {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -82,7 +83,7 @@ const QuenMK = () => {
                 showAlert('success', 'Đổi mật khẩu thành công! Hệ thống đang chuyển hướng...');
                 setEmail(''); setOtp(''); setNewPassword(''); setConfirmPassword('');
                 setTimeout(() => {
-                    window.location.href = '/login'; 
+                    navigate('/login'); 
                 }, 2000);
             }
         } catch (error) {
