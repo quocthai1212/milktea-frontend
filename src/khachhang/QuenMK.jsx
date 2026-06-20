@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, KeyRound, Mail, ShieldCheck, Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-
+const API_URL = import.meta.env.VITE_API_URL;
 const QuenMK = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
@@ -30,7 +30,7 @@ const QuenMK = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5000/api/khachhang/quenmk/gui-otp', { email });
+            const response = await axios.post('${API_URL}/api/khachhang/quenmk/gui-otp', { email });
             if (response.data.success) {
                 showAlert('success', response.data.message);
                 setStep(2); 
@@ -73,7 +73,7 @@ const QuenMK = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5000/api/khachhang/quenmk/xac-nhan', {
+            const response = await axios.post('${API_URL}/api/khachhang/quenmk/xac-nhan', {
                 email,
                 otp,
                 newPassword
