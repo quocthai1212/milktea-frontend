@@ -481,14 +481,36 @@
   font-size: 12px;
 }
 
+/* ======================================================= */
+/* 🔗 ĐƯỜNG DẪN QUÊN MẬT KHẨU: DẠT SÁT PHẢI, THU NHỎ, KHÔNG VIỀN */
+/* ======================================================= */
 .auth-link-btn {
-  margin-top: 10px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--primary-hover);
-  font-weight: 800;
+  align-self: flex-end;         /* Đẩy toàn bộ khối button dạt sát lề bên phải */
+  color: var(--danger-color);   /* Sử dụng tông màu hồng cam gạch nhạt tinh tế (#e76f51) */
+  font-size: 12px;              /* Hạ size chữ nhỏ xuống vừa vặn */
+  font-weight: 600;             /* Giảm độ đậm để chữ nhìn thanh thoát */
+  text-decoration: none;        /* Loại bỏ đường gạch chân thô mặc định */
+  margin-top: 6px;              /* Tạo khoảng cách thở nhẹ nhàng với ô input phía trên */
+  padding: 0;                   /* Triệt tiêu khoảng đệm dư thừa */
+  background: transparent !important; /* Đảm bảo nền luôn trong suốt */
+  border: none !important;      /* Khóa chết hoàn toàn không cho phép xuất hiện khung viền */
+  outline: none !important;     /* Tắt đường viền outline xanh mặc định của trình duyệt */
+  box-shadow: none !important;  /* Triệt tiêu bóng đổ nội bộ */
   cursor: pointer;
+  display: inline-block;
+  -webkit-tap-highlight-color: transparent; /* Xóa vệt highlight xanh khi chạm trên màn hình điện thoại */
+}
+
+.auth-link-btn:hover {
+  color: var(--primary-hover);  /* Chuyển màu mượt mà khi di chuột vào */
+  text-decoration: underline;   /* Gạch chân mảnh nhẹ khi hover để tạo điểm nhấn liên kết */
+}
+
+.auth-link-btn:focus,
+.auth-link-btn:active {
+  border: none !important;
+  outline: none !important;     /* Triệt tiêu hoàn toàn viền xanh của trình duyệt khi click giữ */
+  box-shadow: none !important;
 }
 
 @media (max-width: 900px) {
@@ -547,4 +569,19 @@
     flex-direction: column;
     gap: 6px;
   }
+}
+/* Thêm định dạng giao diện cho hộp cảnh báo khóa tài khoản */
+/* Giao diện hiển thị khi tài khoản bị khóa hẳn */
+.auth-alert--lock {
+  background-color: #fff7ed; /* Màu nền cam nhạt */
+  color: #c2410c;           /* Chữ cam đậm cảnh báo nghiêm trọng */
+  border: 1px solid #ffedd5;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+  box-shadow: 0 2px 4px rgba(194, 65, 12, 0.08);
 }

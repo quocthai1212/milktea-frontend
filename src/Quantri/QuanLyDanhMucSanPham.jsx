@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, CheckCircle, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
-import QuanLySanPham from './QuanLySanPham'; // Import component sản phẩm vào đây
+import QuanLySanPham from './QuanLySanPham'; 
 import '../css/quantri/QuanLyDanhMucSanPham.css';
 
 const QuanLyDanhMucSanPham = () => {
-  // Trạng thái kiểm soát: 'list' (hiện danh mục) hoặc 'products' (hiện sản phẩm của danh mục đó)
   const [viewMode, setViewMode] = useState('list'); 
   const [selectedCategory, setSelectedCategory] = useState({ id: null, name: '' });
 
@@ -31,7 +30,7 @@ const QuanLyDanhMucSanPham = () => {
   const taiDanhSach = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/quantri/danhmuc/all`);
+      const res = await fetch(`${API_URL}/api/quantri/danhmucsanpham/all`);
       const data = await res.json();
       if (data.success) setDanhSachDM(data.data);
     } catch (err) {
@@ -41,7 +40,6 @@ const QuanLyDanhMucSanPham = () => {
     }
   };
 
-  // 🌟 Khi click vào tên danh mục -> Chuyển chế độ xem sang bảng Sản Phẩm
   const handleCategoryClick = (id, name) => {
     setSelectedCategory({ id, name });
     setViewMode('products');
@@ -54,7 +52,9 @@ const QuanLyDanhMucSanPham = () => {
 
   const handleSaveCategory = async (e) => {
     e.preventDefault();
-    const url = dangSuaId ? `${API_URL}/api/quantri/danhmuc/update/${dangSuaId}` : `${API_URL}/api/quantri/danhmuc/add`;
+    const url = dangSuaId 
+      ? `${API_URL}/api/quantri/danhmucsanpham/update/${dangSuaId}` 
+      : `${API_URL}/api/quantri/danhmucsanpham/add`;
     const method = dangSuaId ? 'PUT' : 'POST';
 
     try {
@@ -88,9 +88,6 @@ const QuanLyDanhMucSanPham = () => {
     setFormData({ category_name: '', description: '', is_active: true });
   };
 
-  // ==========================================================================
-  // RENDER PHẦN GIAO DIỆN SẢN PHẨM CON NẾU ĐANG TRONG CHẾ ĐỘ VIEW 'products'
-  // ==========================================================================
   if (viewMode === 'products') {
     return (
       <div className="qldm-nested-wrapper">
@@ -98,7 +95,6 @@ const QuanLyDanhMucSanPham = () => {
           <ArrowLeft size={16} style={{ marginRight: '6px' }} /> Quay lại danh mục
         </button>
         
-        {/* TRUYỀN THÊM danhSachDM XUỐNG ĐỂ CON ĐỌC TÊN BADGE DANH MỤC */}
         <QuanLySanPham 
           categoryId={selectedCategory.id} 
           categoryName={selectedCategory.name} 
@@ -108,9 +104,6 @@ const QuanLyDanhMucSanPham = () => {
     );
   }
 
-  // ==========================================================================
-  // RENDER BẢNG DANH MỤC BAN ĐẦU
-  // ==========================================================================
   return (
     <div className="qldm-container">
       {toast.show && (
@@ -139,13 +132,11 @@ const QuanLyDanhMucSanPham = () => {
             </h3>
             <form onSubmit={handleSaveCategory} autoComplete="off" noValidate>
               
-              {/* 🚀 BẪY CHROME: Ngăn chặn tự động điền thông tin đăng nhập */}
               <div style={{ position: 'absolute', opacity: 0, zIndex: -1, height: 0, overflow: 'hidden' }}>
                 <input type="text" name="chrome_fake_user" autoComplete="username" tabIndex="-1" />
                 <input type="password" name="chrome_fake_pass" autoComplete="current-password" tabIndex="-1" />
               </div>
 
-              {/* Ô TÊN DANH MỤC ĐƯỢC BỌC LỚP BẢO VỆ */}
               <div className="qldm-form-group">
                 <label className="qldm-form-label">Tên danh mục *</label>
                 <div className="auth-input-wrap">
@@ -161,7 +152,6 @@ const QuanLyDanhMucSanPham = () => {
                 </div>
               </div>
 
-              {/* Ô MÔ TẢ ĐƯỢC BỌC LỚP BẢO VỆ */}
               <div className="qldm-form-group">
                 <label className="qldm-form-label">Mô tả ngắn</label>
                 <div className="auth-input-wrap">
@@ -200,6 +190,8 @@ const QuanLyDanhMucSanPham = () => {
                 <tr>
                   <th>Tên Nhóm Danh Mục (Bấm vào để xem món)</th>
                   <th>Mô Tả Chi Tiết</th>
+                  {/* 🌟 ĐÃ CẬP NHẬT: Đổi tiêu đề thành Số Lượng Món */}
+                  <th style={{ width: '160px', textAlign: 'center' }}>🥤 Số Lượng Món</th>
                   <th style={{ width: '150px', textAlign: 'center' }}>Trạng Thái</th>
                   <th style={{ width: '180px', textAlign: 'center' }}>Hành Động</th>
                 </tr>
@@ -207,7 +199,7 @@ const QuanLyDanhMucSanPham = () => {
               <tbody>
                 {danhSachDM.length === 0 ? (
                   <tr>
-                    <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+                    <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
                       Chưa có danh mục sản phẩm nào trên hệ thống.
                     </td>
                   </tr>
@@ -218,6 +210,24 @@ const QuanLyDanhMucSanPham = () => {
                         📁 {dm.category_name}
                       </td>
                       <td>{dm.description || <em style={{ color: '#94a3b8' }}>Chưa có mô tả</em>}</td>
+                      
+                      {/* 🌟 ĐÃ CẬP NHẬT: Giao diện hiển thị số lượng món nước tương ứng */}
+                      <td style={{ textAlign: 'center' }}>
+                        <span style={{ 
+                          background: dm.product_count > 0 ? '#e0f2fe' : '#f1f5f9', 
+                          color: dm.product_count > 0 ? '#0369a1' : '#64748b',
+                          padding: '4px 12px', 
+                          borderRadius: '20px', 
+                          fontWeight: '700',
+                          fontSize: '13px',
+                          display: 'inline-block',
+                          minWidth: '60px',
+                          border: dm.product_count > 0 ? '1px solid #bae6fd' : '1px solid #e2e8f0'
+                        }}>
+                          {dm.product_count || 0} món
+                        </span>
+                      </td>
+
                       <td style={{ textAlign: 'center' }}>
                         <span className={`qldm-badge-status ${dm.is_active ? 'active' : 'hidden-status'}`}>
                           {dm.is_active ? 'Đang hoạt động' : 'Đang ẩn'}
@@ -236,7 +246,6 @@ const QuanLyDanhMucSanPham = () => {
         )}
       </div>
 
-      {/* MODAL XÓA CÓ BẮT LỖI MẠNG AN TOÀN */}
       {moXoaModal && (
         <div className="qldm-modal-overlay">
           <div className="qldm-modal-box-custom qldm-delete-box">
@@ -251,7 +260,7 @@ const QuanLyDanhMucSanPham = () => {
               <button className="qldm-btn-cancel" onClick={() => setMoXoaModal(false)}>Hủy</button>
               <button className="qldm-btn-delete-confirm" onClick={async () => {
                 try {
-                  const res = await fetch(`${API_URL}/api/quantri/danhmuc/delete/${dmCanXoa.id}`, { method: 'DELETE' });
+                  const res = await fetch(`${API_URL}/api/quantri/danhmucsanpham/delete/${dmCanXoa.id}`, { method: 'DELETE' });
                   const data = await res.json();
                   if (data.success) {
                     showToast('Xóa danh mục sản phẩm thành công!', 'success');

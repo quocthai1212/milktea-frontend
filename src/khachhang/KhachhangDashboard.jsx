@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, ClipboardList, Pencil, MapPin, Eye, XCircle, Save, User, X, PackageSearch, ShoppingBag, History, Star, CheckCircle } from 'lucide-react';
+import { Package, ClipboardList, Pencil, MapPin, Eye, XCircle, Save, User, X, PackageSearch, ShoppingBag, History, Star, CheckCircle,Store } from 'lucide-react';
 import TrangChuHeader from '../components/TrangChuHeader';
 import ModalDiaChiGiaoHang from './ModalDiaChiGiaoHang';
 import '../css/TrangChu.css';
@@ -11,6 +11,19 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const formatTien = (n) => Number(n || 0).toLocaleString('vi-VN') + 'đ';
 const formatNgay = (d) =>
   d ? new Date(d).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+
+// =========================================================================
+// 🌐 BỘ TỪ ĐIỂN ÁNH XẠ TRẠNG THÁI TIẾNG ANH SANG TIẾNG VIỆT (ĐÃ CẬP NHẬT)
+// =========================================================================
+const MAP_TRANG_THAI = {
+  'pending': { label: 'Chờ xử lý', className: 'status-pending' },
+  'preparing': { label: 'Đang chuẩn bị món', className: 'status-preparing' },
+  'ready': { label: 'Hoàn thành món', className: 'status-ready' },
+  'shipping': { label: 'Đang giao hàng', className: 'status-shipping' },
+  'completed': { label: 'Đã hoàn thành', className: 'status-completed' },
+  'cancelled': { label: 'Đã hủy đơn', className: 'status-cancelled' },
+  'failed': { label: 'Giao hàng thất bại', className: 'status-failed' }
+};
 
 const KhachhangDashboard = () => {
   const navigate = useNavigate();
@@ -35,13 +48,13 @@ const KhachhangDashboard = () => {
   const [dangGuiReview, setDangGuiReview] = useState(false);
 
   // =========================================================================
-  // 🔥 ĐOẠN BỔ SUNG: TỰ ĐỘNG ĐÓNG ALERT / TOAST THÔNG BÁO SAU 2 GIÂY
+  // 🔥 ĐOẠN BỔ SUNG: TỰ ĐỘNG ĐÓNG ALERT / TOAST THÔNG BÁO SAU 3 GIÂY (Tăng nhẹ thời gian để kịp đọc lỗi dài)
   // =========================================================================
   useEffect(() => {
     if (thongBao.noiDung) {
       const timer = setTimeout(() => {
         setThongBao({ kieu: '', noiDung: '' });
-      }, 2000);
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
@@ -79,6 +92,7 @@ const KhachhangDashboard = () => {
           ...JSON.parse(localStorage.getItem('user') || '{}'),
           full_name: dataHoSo.user?.full_name,
           email: dataHoSo.user?.email,
+          phone: dataHoSo.user?.phone,
         }));
         if (dataHoSo.shipping_address?.address_detail) {
           localStorage.setItem(
@@ -96,7 +110,7 @@ const KhachhangDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [donChiTiet]);
+  }, []);
 
   useEffect(() => {
     const roleId = Number(localStorage.getItem('role_id'));
@@ -115,9 +129,11 @@ const KhachhangDashboard = () => {
     }
   }, [navigate, taiDuLieu]);
 
-  const donTheoDoi = donHang.filter((d) => ['pending', 'preparing', 'shipping'].includes(d.status));
-  const donLichSu = donHang.filter((d) => ['completed', 'cancelled'].includes(d.status));
-  const coTheHuy = (status) => ['pending', 'preparing'].includes(status);
+  // Lọc danh sách theo cấu trúc trạng thái tiếng Anh gốc
+  const donTheoDoi = donHang.filter((d) => ['pending', 'preparing', 'ready', 'shipping'].includes(d.status));
+  const donLichSu = donHang.filter((d) => ['completed', 'cancelled', 'failed'].includes(d.status));
+
+  const coTheHuy = (status) => ['pending', 'preparing', 'ready'].includes(status);
 
   const handleHuyDon = async (orderId) => {
     if (!window.confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
@@ -134,6 +150,7 @@ const KhachhangDashboard = () => {
         setThongBao({ kieu: 'thanhcong', noiDung: data.message });
         setDonChiTiet(null);
         taiDuLieu(userId);
+        
       } else {
         setThongBao({ kieu: 'loi', noiDung: data.message || 'Không hủy được đơn!' });
       }
@@ -185,9 +202,15 @@ const KhachhangDashboard = () => {
   };
 
   const handleGuiReview = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
+    // 🎯 CHỐT CHẶN: Nếu đang gửi rồi thì chặn đứng, không cho phát request thứ 2
+    if (dangGuiReview) return;
     if (!selectedReviewProduct || selectedReviewProduct.is_reviewed) return;
+  
     setDangGuiReview(true);
+    setThongBao({ kieu: '', noiDung: '' }); 
+    
     try {
       const res = await fetch(`${API_URL}/api/khachhang/danh-gia`, {
         method: 'POST',
@@ -202,7 +225,7 @@ const KhachhangDashboard = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        setThongBao({ kieu: 'thanhcong', noiDung: 'Đăng bình luận, đánh giá thành công!' });
+        setThongBao({ kieu: 'thanhcong', noiDung: data.message || 'Đăng bình luận, đánh giá thành công!' });
         setModalReview(false);
         setCommentText('');
         setRating(5);
@@ -213,6 +236,7 @@ const KhachhangDashboard = () => {
     } catch {
       setThongBao({ kieu: 'loi', noiDung: 'Lỗi kết nối máy chủ!' });
     } finally {
+      // Chỉ mở khóa khi mọi tiến trình xử lý xong
       setDangGuiReview(false);
     }
   };
@@ -229,6 +253,7 @@ const KhachhangDashboard = () => {
       setRating(item.my_review.rating || 5);
       setCommentText(item.my_review.comment_text || '');
     } else {
+      // Làm sạch dữ liệu form cũ đối với sản phẩm chưa được đánh giá
       setRating(5);
       setCommentText('');
     }
@@ -286,11 +311,14 @@ const KhachhangDashboard = () => {
   };
 
   const renderDonCard = (don) => {
-    const labelHienThi = don.status_detail?.label || don.status;
-    const classHienThi = don.status_detail?.className || '';
+    const trangThaiGoc = don.status;
+    const cauHinhTrangThai = MAP_TRANG_THAI[trangThaiGoc] || { label: trangThaiGoc, className: '' };
+
+    const labelHienThi = don.status_detail?.label || cauHinhTrangThai.label;
+    const classHienThi = don.status_detail?.className || cauHinhTrangThai.className;
+    
     const maDon = don._id?.slice(-8).toUpperCase() || '—';
     const tongSoLuongMon = (don.items || []).reduce((acc, item) => acc + (item.quantity || 0), 0);
-
     return (
       <div key={don._id} className="tc-card khdh-order-card">
         <div className="tc-card-body">
@@ -301,6 +329,18 @@ const KhachhangDashboard = () => {
             </div>
             <span className={`khdh-status-badge ${classHienThi}`}>{labelHienThi}</span>
           </div>
+
+          {/* 🌟 VỊ TRÍ CẬP NHẬT 1: Hiển thị tên chi nhánh an toàn ở danh sách ngoài */}
+          <span>
+            Chi nhánh: <strong>
+              {don.branch_id && typeof don.branch_id === 'object'
+                ? (don.branch_id.branch_name || 'Hệ thống tổng')
+                : 'Hệ thống tổng' 
+                /* 👆 Thay vì in ra (don.branch_id) tức là cái chuỗi ID thô xấu xí, 
+                  ta ép nó hiện chữ 'Hệ thống tổng' hoặc ẩn đi luôn nếu chưa có tên */
+              }
+            </strong>
+          </span>
 
           <div className="khdh-order-items-preview">
             {(don.items || []).map((item, index) => {
@@ -372,12 +412,12 @@ const KhachhangDashboard = () => {
   const renderTimeline = (don) => {
     const history = don.status_history?.length
       ? [...don.status_history].reverse()
-      : [{ status: don.status, status_label: don.status_detail?.label || don.status, updated_at: don.updatedAt || don.createdAt }];
+      : [{ status: don.status, status_label: MAP_TRANG_THAI[don.status]?.label || don.status_detail?.label || don.status, updated_at: don.updatedAt || don.createdAt }];
 
     return (
       <ul className="khdh-timeline">
         {history.map((step, idx) => {
-          const tenTrangThai = step.status_label || step.status;
+          const tenTrangThai = MAP_TRANG_THAI[step.status]?.label || step.status_label || step.status;
           return (
             <li key={idx} className="khdh-timeline-item">
               <span className="khdh-timeline-dot" />
@@ -519,7 +559,7 @@ const KhachhangDashboard = () => {
                             className="tc-btn-order khdh-btn-address"
                             onClick={() => setModalDiaChi(true)}
                           >
-                            <><MapPin size={16} /> {diaChi?.address_detail ? 'Đổi địa chỉ' : 'Thêm địa chỉ giao hàng'}</>
+                            <MapPin size={16} /> {diaChi?.address_detail ? 'Đổi địa chỉ' : 'Thêm địa chỉ giao hàng'}
                           </button>
                         </div>
                       </div>
@@ -550,12 +590,32 @@ const KhachhangDashboard = () => {
             <div className="tc-modal-right" style={{ width: '100%', padding: '24px' }}>
               <div className="khdh-modal-header-block">
                 <h2>Đơn #{donChiTiet._id?.slice(-8).toUpperCase()}</h2>
-                <span className={`khdh-status-badge ${donChiTiet.status_detail?.className || ''}`}>
-                  {donChiTiet.status_detail?.label || donChiTiet.status}
+                <span className={`khdh-status-badge ${MAP_TRANG_THAI[donChiTiet.status]?.className || donChiTiet.status_detail?.className || ''}`}>
+                  {MAP_TRANG_THAI[donChiTiet.status]?.label || donChiTiet.status_detail?.label || donChiTiet.status}
                 </span>
               </div>
               <span className="khdh-modal-date">Thời gian đặt: {formatNgay(donChiTiet.createdAt)}</span>
               
+              {/* 🌟 VỊ TRÍ CẬP NHẬT 2: Khung thông tin chi nhánh an toàn ở Modal chi tiết */}
+              <div className="khdh-modal-branch-detail" style={{ background: '#f0f9ff', padding: '12px', borderRadius: '8px', border: '1px solid #bae6fd', marginTop: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '600', color: '#0369a1' }}>
+                  <Store size={16} />
+                  <span>
+                    Cửa hàng chuẩn bị đơn:{' '}
+                    <strong>
+                      {typeof donChiTiet.branch_id === 'object' && donChiTiet.branch_id !== null
+                        ? (donChiTiet.branch_id.branch_name || 'Hệ thống tổng')
+                        : (donChiTiet.branch_id || 'Hệ thống tổng')}
+                    </strong>
+                  </span>
+                </div>
+                {donChiTiet.branch_id?.shop_address && (
+                  <p style={{ margin: '4px 0 0 22px', fontSize: '12px', color: '#0c4a6e' }}>
+                    Địa chỉ chi nhánh: {donChiTiet.branch_id.shop_address}
+                  </p>
+                )}
+              </div>
+
               {donChiTiet.shipping_address?.customer_name && (
                 <p className="khdh-modal-addr" style={{ marginTop: '12px' }}>
                   <User size={15} /> <strong>{donChiTiet.shipping_address.customer_name}</strong>
@@ -721,45 +781,60 @@ const KhachhangDashboard = () => {
                     resize: 'vertical',
                     backgroundColor: selectedReviewProduct.is_reviewed ? '#f9fafb' : '#fff'
                   }}
-                  placeholder={selectedReviewProduct.is_reviewed ? '' : "Chia sẻ cảm nhận của bạn về hương vị ly trà sữa này nhé..."}
+                  placeholder={selectedReviewProduct.is_reviewed ? '' : "Chia sẻ cảm nhận của bạn về món ăn này..."}
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   disabled={selectedReviewProduct.is_reviewed}
-                  required
                 />
               </div>
 
-              {!selectedReviewProduct.is_reviewed ? (
-                <button
-                  type="submit"
-                  className="tc-btn-submit-cart"
-                  style={{ width: '100%', padding: '12px', fontWeight: '600', borderRadius: '8px' }}
-                  disabled={dangGuiReview}
-                >
-                  {dangGuiReview ? 'Đang gửi đánh giá...' : 'Gửi đánh giá'}
-                </button>
-              ) : (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                 <button
                   type="button"
-                  className="khdh-btn-cancel"
-                  style={{ width: '100%', padding: '12px', fontWeight: '600', borderRadius: '8px', backgroundColor: '#e5e7eb', color: '#4b5563', border: 'none' }}
                   onClick={() => setModalReview(false)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: '#fff',
+                    cursor: 'pointer'
+                  }}
                 >
-                  Đóng cửa sổ
+                  Đóng
                 </button>
-              )}
+                {!selectedReviewProduct.is_reviewed && (
+                  <button
+                    type="submit"
+                    disabled={dangGuiReview}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: '#10b981',
+                      color: '#fff',
+                      fontWeight: '500',
+                      cursor: dangGuiReview ? 'not-allowed' : 'pointer',
+                      opacity: dangGuiReview ? 0.7 : 1
+                    }}
+                  >
+                    {dangGuiReview ? 'Đang gửi...' : 'Gửi đánh giá'}
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </div>
       )}
 
-      <ModalDiaChiGiaoHang
-        isOpen={modalDiaChi}
-        batBuoc={false}
-        userId={userId}
-        onSuccess={handleDiaChiCapNhat}
-        onClose={() => setModalDiaChi(false)}
-      />
+      {/* MODAL: ĐỊA CHỈ GIAO HÀNG */}
+      {modalDiaChi && (
+        <ModalDiaChiGiaoHang
+          userId={userId}
+          currentAddress={diaChi}
+          onClose={() => setModalDiaChi(false)}
+          onSave={handleDiaChiCapNhat}
+        />
+      )}
     </div>
   );
 };

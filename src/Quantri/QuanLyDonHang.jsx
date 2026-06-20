@@ -1,89 +1,175 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   ClipboardList, Search, Filter, Eye, Printer, CheckCircle, 
-  XCircle, Truck, Package, Clock, AlertTriangle, RefreshCw, User, MapPin, Phone 
+  XCircle, Truck, Package, Clock, AlertTriangle, RefreshCw, User, MapPin, Phone, Building2 
 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css';
 import '../css/quantri/QuanLyDonHang.css'; 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// Bảng ánh xạ dịch trạng thái sang Tiếng Việt để hiển thị giao diện
+const STATUS_VI = {
+  'pending': 'Chờ duyệt',
+  'preparing': 'Đang pha chế',
+  'ready': 'Đã pha chế xong',
+  'shipping': 'Đang giao hàng',
+  'completed': 'Giao hàng thành công',
+  'failed': 'Thất bại (Khách BOM)',
+  'cancelled': 'Đã hủy đơn'
+};
 
 const QuanLyDonHang = () => {
   // --- States quản lý dữ liệu ---
   const [danhSachDonHang, setDanhSachDonHang] = useState([]);
   const [loading, setLoading] = useState(false);
   const [danhSachShipper, setDanhSachShipper] = useState([]);
+  const [danhSachChiNhanh, setDanhSachChiNhanh] = useState([]); // 🌟 Lưu danh sách chi nhánh tự động trích xuất
 
   // --- States Bộ lọc & Tìm kiếm ---
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('all'); 
 
   // --- States Modal Chi tiết & Điều hành ---
   const [modalOpen, setModalOpen] = useState(false);
   const [donHangSelected, setDonHangSelected] = useState(null);
-  const [lyDoHuy, setLyDoHuy] = useState('');
   const [shipperSelected, setShipperSelected] = useState('');
   
+  // --- States Modal Xác nhận & Nhập lý do Hủy ---
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState({ donHang: null, trangThaiMoi: '' });
+  const [lyDoHuyInput, setLyDoHuyInput] = useState('');
+
   const componentRef = useRef();
 
-  // --- 🔍 1. Gọi API lấy danh sách đơn hàng ---
+  // --- 👤 Lấy ID Admin từ LocalStorage ---
+  const getLoggedInStaffId = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user._id || null; 
+    } catch (e) {
+      console.error("Không thể đọc thông tin cơ sở đăng nhập:", e);
+      return null;
+    }
+  };
+
+  // --- 🔍 Gọi API lấy danh sách đơn hàng & Tự động trích xuất Chi nhánh, Shipper (Khắc phục lỗi 404) ---
   const layDanhSachDonHang = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/quantri/donhang/all`);
+      let url = `${API_URL}/api/quantri/donhang/all?status=${statusFilter}&payment_method=${paymentFilter}&branch_id=${branchFilter}`;
+      
+      const response = await fetch(url);
       const result = await response.json();
+      
       if (result.success) {
-        setDanhSachDonHang(result.data || []);
+        const dataOrders = result.data || [];
+        setDanhSachDonHang(dataOrders);
+
+        // Sử dụng Map để lọc trùng lặp dữ liệu
+        const mapChiNhanh = new Map();
+        const mapShipper = new Map();
+
+        // Duyệt qua tất cả đơn hàng hiện có để gom dữ liệu Chi nhánh và Shipper thực tế
+        dataOrders.forEach(don => {
+          // Gom chi nhánh hợp lệ từ liên kết populate branch_id
+          if (don.branch_id && don.branch_id._id) {
+            mapChiNhanh.set(String(don.branch_id._id), don.branch_id);
+          }
+          // Gom shipper hợp lệ từ liên kết populate shipper_id
+          if (don.shipper_id && don.shipper_id._id) {
+            mapShipper.set(String(don.shipper_id._id), don.shipper_id);
+          }
+        });
+
+        // Chỉ cập nhật danh sách thanh lựa chọn khi đang ở chế độ "Tất cả chi nhánh"
+        // Để tránh việc thanh chọn bị thu hẹp chỉ còn 1 option khi bấm chọn bộ lọc
+        if (branchFilter === 'all') {
+          setDanhSachChiNhanh(Array.from(mapChiNhanh.values()));
+        }
+        setDanhSachShipper(Array.from(mapShipper.values()));
+
+        // Đồng bộ dữ liệu trong Modal xem chi tiết thời gian thực
+        if (donHangSelected) {
+          const updatedOrder = dataOrders.find(o => o._id === donHangSelected._id);
+          if (updatedOrder) {
+            setDonHangSelected(updatedOrder);
+            setShipperSelected(updatedOrder.shipper_id?._id || '');
+          }
+        }
       }
     } catch (error) {
       console.error("Lỗi lấy danh sách đơn hàng:", error);
+      toast.error("Không thể tải danh sách đơn hàng!");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- 🏍️ 2. Gọi API lấy danh sách tài xế (Shipper) ---
-  const layDanhSachShipper = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/quantri/qt_shipper/all`);
-      const result = await response.json();
-      if (result.success) {
-        setDanhSachShipper(result.data || []);
-      } else if (Array.isArray(result)) {
-        setDanhSachShipper(result);
-      }
-    } catch (error) {
-      console.error("Lỗi lấy danh sách shipper:", error);
-    }
-  };
-
+  // Theo dõi sự thay đổi của bộ lọc để tự động Re-fetch dữ liệu chuẩn xác
   useEffect(() => {
     layDanhSachDonHang();
-    layDanhSachShipper();
-  }, []);
+  }, [statusFilter, paymentFilter, branchFilter]);
 
-  // --- ⚙️ 3. Thay đổi trạng thái đơn hàng & gán Shipper ---
+  // --- ⚙️ Điều phối & Thay đổi trạng thái đơn hàng ---
   const handleCapNhatTrangThai = async (idDonHang, trangThaiMoi, dataBoSung = {}) => {
     try {
+      const payload = { status: trangThaiMoi, ...dataBoSung };
+      const currentStaffId = getLoggedInStaffId();
+      if (currentStaffId) {
+        payload.staff_id = currentStaffId;
+      }
+
       const response = await fetch(`${API_URL}/api/quantri/donhang/update-status/${idDonHang}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: trangThaiMoi, ...dataBoSung })
+        body: JSON.stringify(payload)
       });
+      
       const result = await response.json();
       if (result.success) {
-        alert(`Cập nhật thành công đơn hàng sang trạng thái mới!`);
-        setModalOpen(false);
-        layDanhSachDonHang(); 
+        toast.success(result.message || `Chuyển trạng thái thành công!`);
+        await layDanhSachDonHang(); 
       } else {
-        alert(result.message || "Cập nhật thất bại");
+        toast.error(result.message || "Cập nhật thất bại");
       }
     } catch (error) {
       console.error("Lỗi cập nhật trạng thái đơn:", error);
+      toast.error("Đã xảy ra lỗi hệ thống khi cập nhật!");
     }
   };
 
-  // --- 🖨️ 4. In hóa đơn tại chỗ ---
+  // --- 🛠️ Mở Modal xác nhận thay đổi trạng thái ---
+  const handleThayDoiTrangThaiTaiHang = (donHang, trangThaiMoi) => {
+    if (trangThaiMoi === donHang.status) return;
+    
+    setPendingUpdate({ donHang, trangThaiMoi });
+    setLyDoHuyInput(''); 
+    setConfirmModalOpen(true); 
+  };
+
+  // --- 🛠️ Xác nhận hành động từ Modal Custom ---
+  const handleXacNhanCapNhat = async () => {
+    const { donHang, trangThaiMoi } = pendingUpdate;
+    if (!donHang) return;
+
+    if (['cancelled', 'failed'].includes(trangThaiMoi)) {
+      if (!lyDoHuyInput.trim()) {
+        toast.warning("Bạn bắt buộc phải nhập lý do!");
+        return;
+      }
+      await handleCapNhatTrangThai(donHang._id, trangThaiMoi, { cancel_reason: lyDoHuyInput });
+    } else {
+      await handleCapNhatTrangThai(donHang._id, trangThaiMoi);
+    }
+    
+    setConfirmModalOpen(false); 
+  };
+
+  // --- 🖨️ In hóa đơn tại chỗ ---
   const handleInDonHang = () => {
     const printContent = componentRef.current.innerHTML;
     const originalContent = document.body.innerHTML;
@@ -96,52 +182,42 @@ const QuanLyDonHang = () => {
   const handleXemChiTiet = (donHang) => {
     setDonHangSelected(donHang);
     setShipperSelected(donHang.shipper_id?._id || '');
-    setLyDoHuy(donHang.cancel_reason || '');
     setModalOpen(true);
   };
 
-  // --- Bộ lọc dữ liệu Client-side mượt mà ---
+  // --- Bộ lọc tìm kiếm nhanh Client-side ---
   const filteredDonHangs = danhSachDonHang.filter(don => {
     const orderIdStr = don._id ? String(don._id).toLowerCase() : '';
     const customerNameStr = (don.shipping_address?.customer_name || don.customer_id?.full_name || '').toLowerCase();
     const customerPhoneStr = don.shipping_address?.phone || don.customer_id?.phone || '';
 
-    const matchSearch = orderIdStr.includes(searchQuery.toLowerCase()) || 
-                        customerNameStr.includes(searchQuery.toLowerCase()) ||
-                        customerPhoneStr.includes(searchQuery);
-    
-    const matchStatus = statusFilter === 'all' ? true : don.status === statusFilter;
-    const matchPayment = paymentFilter === 'all' ? true : don.payment_method === paymentFilter;
-
-    return matchSearch && matchStatus && matchPayment;
+    return orderIdStr.includes(searchQuery.toLowerCase()) || 
+           customerNameStr.includes(searchQuery.toLowerCase()) ||
+           customerPhoneStr.includes(searchQuery);
   });
 
-  const renderBadgeTrangThai = (status) => {
-    switch(status) {
-      case 'pending': return <span className="dh-badge status-pending"><Clock size={12}/> Chờ duyệt</span>;
-      case 'preparing': return <span className="dh-badge status-confirmed"><Package size={12}/> Đang pha chế</span>;
-      case 'shipping': return <span className="dh-badge status-shipping"><Truck size={12}/> Đang giao</span>;
-      case 'completed': return <span className="dh-badge status-completed"><CheckCircle size={12}/> Thành công</span>;
-      case 'failed': return <span className="dh-badge status-failed"><XCircle size={12}/> Thất bại (Bom)</span>;
-      case 'cancelled': return <span className="dh-badge status-failed"><XCircle size={12}/> Đã hủy đơn</span>;
-      default: return <span className="dh-badge">{status}</span>;
-    }
+  const isTransferPaid = (donHang) => (
+    ['PAYOS'].includes(donHang?.payment_method) && donHang?.payment_status === 'PAID'
+  );
+
+  const paymentMethodLabel = (method) => {
+    if (method === 'CASH') return 'Tiền mặt';
+    if (method === 'PAYOS') return 'Chuyển khoản QR';
+    return method || 'N/A';
   };
 
   return (
     <div className="dh-manager-container">
+      <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+
       {/* HEADER */}
       <div className="dh-header">
         <h2 className="dh-title">
           <ClipboardList size={26} className="dh-title-icon" /> Quản lý & Điều phối Đơn hàng
         </h2>
-        <button onClick={layDanhSachDonHang} className="dh-btn-refresh" disabled={loading}>
-          <RefreshCw size={15} className={loading ? 'dh-spin' : ''} /> 
-          <span>Làm mới dữ liệu</span>
-        </button>
       </div>
 
-      {/* TOOLBAR TÌM KIẾM & BỘ LỌC */}
+      {/* TOOLBAR TÌM KIẾM & BỘ LỌC ĐA NHIỆM */}
       <div className="dh-toolbar">
         <div className="dh-search-box">
           <Search size={18} className="dh-icon-search" />
@@ -154,15 +230,33 @@ const QuanLyDonHang = () => {
         </div>
 
         <div className="dh-filters-group">
+          {/* 🌟 BỘ LỌC CHI NHÁNH: Đã bọc cơ chế chống crash và nạp dữ liệu động */}
+          <div className="dh-filter-item">
+            <Building2 size={14} style={{ color: '#4b5563' }} />
+            <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
+              <option value="all">Tất cả chi nhánh ({danhSachChiNhanh.length})</option>
+              {danhSachChiNhanh.length > 0 ? (
+                danhSachChiNhanh.map((branch) => (
+                  <option key={branch._id} value={branch._id}>
+                    🏪 {branch.branch_name || 'Chi nhánh ẩn'}
+                  </option>
+                ))
+              ) : (
+                <option disabled value="">(Chưa tải được chi nhánh)</option>
+              )}
+            </select>
+          </div>
+
           <div className="dh-filter-item">
             <Filter size={14} />
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
               <option value="all">Tất cả trạng thái</option>
               <option value="pending">⏳ Chờ duyệt</option>
               <option value="preparing">🧋 Đang pha chế</option>
+              <option value="ready">📦 Đã pha chế xong</option>
               <option value="shipping">🏍️ Đang đi giao hàng</option>
               <option value="completed">🟢 Giao hàng thành công</option>
-              <option value="failed">🔴 Thất bại (Khách BOM)</option>
+              <option value="failed">🔴 Giao hàng thất bại (BOM)</option>
               <option value="cancelled">❌ Đã hủy đơn</option>
             </select>
           </div>
@@ -171,8 +265,7 @@ const QuanLyDonHang = () => {
             <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}>
               <option value="all">Tất cả phương thức</option>
               <option value="CASH">💵 Tiền mặt (CASH)</option>
-              <option value="QR_CODE">📱 Chuyển khoản QR</option>
-              <option value="PAYOS">💳 Cổng PayOS</option>
+              <option value="PAYOS">📱 Chuyển khoản QR</option>
             </select>
           </div>
         </div>
@@ -190,10 +283,12 @@ const QuanLyDonHang = () => {
               <tr>
                 <th>Mã Đơn (ID)</th>
                 <th>Khách Hàng</th>
+                <th>Cơ Sở / Chi Nhánh</th>
                 <th>Thời Gian Đặt</th>
                 <th>Thanh Toán</th>
+                <th>Nhân Viên Duyệt</th>
                 <th>Shipper Đảm Nhận</th>
-                <th>Trạng Thái</th>
+                <th style={{ width: '160px' }}>Đổi Trạng Thái</th>
                 <th className="text-right">Tổng Tiền</th>
                 <th className="text-center">Thao tác</th>
               </tr>
@@ -201,7 +296,6 @@ const QuanLyDonHang = () => {
             <tbody>
               {filteredDonHangs.map((don) => (
                 <tr key={don._id} className={`dh-row-status-${don.status}`}>
-                  {/* Hiển thị Full ID hoặc 8 ký tự cuối một cách an toàn */}
                   <td><span className="dh-code-text" title={don._id}>{don._id ? String(don._id).slice(-8).toUpperCase() : 'N/A'}</span></td>
                   <td>
                     <div className="dh-cust-cell">
@@ -209,20 +303,73 @@ const QuanLyDonHang = () => {
                       <span>{don.shipping_address?.phone || don.customer_id?.phone || 'Không có SĐT'}</span>
                     </div>
                   </td>
-                  <td>{don.createdAt ? new Date(don.createdAt).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'}) : 'N/A'}</td>
                   <td>
-                    <span className={`dh-pay-badge ${don.payment_method}`}>
-                      {don.payment_method === 'CASH' ? '💵 Tiền mặt' : don.payment_method === 'QR_CODE' ? '📱 Mã QR' : '💳 PayOS'}
+                    <span className="dh-branch-badge" style={{ fontSize: '13px', fontWeight: '600', color: '#4f46e5' }}>
+                      🏪 {don.branch_id?.branch_name || <span style={{ color: '#9ca3af', fontWeight: 'normal' }}>Chưa phân vị trí</span>}
                     </span>
                   </td>
+                  <td>{don.createdAt ? new Date(don.createdAt).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'}) : 'N/A'}</td>
                   <td>
-                    {don.shipper_id ? (
-                      <span className="dh-shipper-assigned">🏍️ {don.shipper_id.full_name}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span className={`dh-pay-badge ${don.payment_method}`}>
+                        {paymentMethodLabel(don.payment_method)}
+                      </span>
+                      {/* Nếu là PayOS và đã thanh toán, hiển thị tooltip hoặc tên viết tắt của người chuyển */}
+                      {don.payment_method === 'PAYOS' && don.payment_info?.bank_account_name && (
+                        <span style={{ fontSize: '11px', color: '#059669', fontWeight: '500' }} title={`STK: ${don.payment_info.bank_account_number}`}>
+                          👤 {don.payment_info.bank_account_name.substring(0, 15)}...
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    {don.staff_id?.full_name ? (
+                      <span className="dh-staff-name" style={{ fontWeight: '500', color: '#374151' }}>
+                        👤 {don.staff_id.full_name}
+                      </span>
                     ) : (
-                      <span className="dh-shipper-none">Chưa điều xe</span>
+                      <span className="dh-staff-empty" style={{ fontStyle: 'italic', color: '#9ca3af' }}>
+                        {don.status === 'pending' ? '⏳ Chờ tiếp nhận' : '🤖 Hệ thống'}
+                      </span>
                     )}
                   </td>
-                  <td>{renderBadgeTrangThai(don.status)}</td>
+                  <td>
+                    {don.shipper_id?.full_name ? (
+                      <span className="dh-shipper-assigned">🏍️ {don.shipper_id.full_name}</span>
+                    ) : (
+                      <span className="dh-shipper-none" style={{ color: ['pending', 'preparing', 'ready'].includes(don.status) ? '#9ca3af' : '#ef4444', fontStyle: 'italic' }}>
+                        {['pending', 'preparing', 'ready'].includes(don.status) ? '⏱️ Chưa điều phối' : '❌ Không có'}
+                      </span>
+                    )}
+                  </td>
+                  
+                  <td>
+                    <select 
+                      className={`dh-status-select select-status-${don.status}`}
+                      value={don.status} 
+                      disabled={['completed', 'failed', 'cancelled'].includes(don.status)}
+                      onChange={(e) => handleThayDoiTrangThaiTaiHang(don, e.target.value)}
+                      style={{
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid #d1d5db',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        cursor: ['completed', 'failed', 'cancelled'].includes(don.status) ? 'not-allowed' : 'pointer',
+                        width: '100%',
+                        backgroundColor: '#fff'
+                      }}
+                    >
+                      <option value="pending">⏳ Chờ duyệt</option>
+                      <option value="preparing">🧋 Đang pha chế</option>
+                      <option value="ready">📦 Đã pha chế xong</option>
+                      <option value="shipping">🏍️ Đang giao hàng</option>
+                      <option value="completed">🟢 Thành công</option>
+                      <option value="failed">🔴 Thất bại (BOM)</option>
+                      <option value="cancelled">❌ Đã hủy đơn</option>
+                    </select>
+                  </td>
+
                   <td className="text-right text-bold text-dark">
                     {(don.total_amount || 0).toLocaleString('vi-VN')} đ
                   </td>
@@ -249,9 +396,16 @@ const QuanLyDonHang = () => {
             </div>
 
             <div className="dh-modal-body">
-              {/* VÙNG IN HÓA ĐƠN */}
               <div ref={componentRef} className="dh-print-section">
                 <div className="dh-invoice-title">HÓA ĐƠN MILKTEA PARADISE</div>
+                <div style={{ textAlign: 'center', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+                  🏢 {donHangSelected.branch_id?.branch_name || 'Cơ sở Tổng Hệ Thống'}
+                </div>
+                {donHangSelected.branch_id?.shop_address && (
+                  <p className="text-center text-muted text-small" style={{ margin: '0 auto 8px auto', maxWidth: '80%' }}>
+                    📍 Địa chỉ: {donHangSelected.branch_id.shop_address}
+                  </p>
+                )}
                 <p className="text-center text-muted text-small">Mã hệ thống: {donHangSelected._id}</p>
                 <hr className="dashed-line"/>
 
@@ -260,17 +414,62 @@ const QuanLyDonHang = () => {
                     <h5><User size={14}/> Khách hàng</h5>
                     <p><strong>Tên:</strong> {donHangSelected.shipping_address?.customer_name || donHangSelected.customer_id?.full_name || 'Khách vãng lai'}</p>
                     <p><strong>SĐT:</strong> {donHangSelected.shipping_address?.phone || donHangSelected.customer_id?.phone || 'N/A'}</p>
-                    {/* 🛠️ SỬA LỖI ĐỊA CHỈ: Đọc chính xác từ object shipping_address của Schema */}
                     <p><strong>Địa chỉ:</strong> {donHangSelected.shipping_address?.address_detail || 'Nhận trực tiếp tại cửa hàng'}</p>
                   </div>
                   <div>
                     <h5><Clock size={14}/> Thông tin đơn</h5>
                     <p><strong>Ngày đặt:</strong> {new Date(donHangSelected.createdAt).toLocaleString('vi-VN')}</p>
                     <p><strong>Hình thức:</strong> {donHangSelected.order_type === 'pos' ? 'Tại quầy (POS)' : 'Đặt trực tuyến (Online)'}</p>
-                    <p><strong>Cổng thanh toán:</strong> {donHangSelected.payment_method} ({donHangSelected.payment_status})</p>
-                    <p><strong>Trạng thái đơn:</strong> {donHangSelected.status.toUpperCase()}</p>
+                    <p><strong>Cổng thanh toán:</strong> {paymentMethodLabel(donHangSelected.payment_method)} ({donHangSelected.payment_status})</p>
+                    <p><strong>Trạng thái đơn:</strong> <span className="text-bold text-uppercase" style={{color: '#2563eb'}}>{STATUS_VI[donHangSelected.status] || donHangSelected.status}</span></p>
+                    
+                    <hr style={{ margin: '6px 0', border: 'none', borderTop: '1px dotted #e5e7eb' }} />
+                    <p><strong>👤 Nhân viên phụ trách:</strong> {donHangSelected.staff_id?.full_name || (donHangSelected.status === 'pending' ? 'Chờ tiếp nhận...' : 'Hệ thống tự động')}</p>
+                    <p><strong>🏍️ Shipper giao hàng:</strong> {donHangSelected.shipper_id?.full_name ? `${donHangSelected.shipper_id.full_name} (${donHangSelected.shipper_id.phone || ''})` : 'Chưa chỉ định tài xế'}</p>
                   </div>
                 </div>
+
+                {isTransferPaid(donHangSelected) && (
+                  <div className="dh-payment-success-box" style={{
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '8px',
+                    padding: '14px',
+                    marginBottom: '15px'
+                  }}>
+                    <h5 style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: '6px', margin: '0 0 10px 0', fontSize: '14px', fontWeight: '650' }}>
+                      <CheckCircle size={16} /> Đối Soát Giao Dịch QR-PayOS
+                    </h5>
+                    
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                      gap: '8px 16px',
+                      fontSize: '13px',
+                      color: '#374151'
+                    }}>
+                      <p style={{ margin: 0 }}><strong>👤 Người chuyển:</strong> {donHangSelected.payment_info?.bank_account_name || 'N/A'}</p>
+                      <p style={{ margin: 0 }}><strong>💳 Số tài khoản:</strong> {donHangSelected.payment_info?.bank_account_number || 'N/A'}</p>
+                      <p style={{ margin: 0 }}><strong>💵 Tiền thực nhận:</strong> <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{(donHangSelected.payment_info?.bank_amount_paid || donHangSelected.total_amount || 0).toLocaleString('vi-VN')} đ</span></p>
+                      <p style={{ margin: 0 }}><strong>⏱️ Thời gian:</strong> {donHangSelected.payment_info?.paid_at ? new Date(donHangSelected.payment_info.paid_at).toLocaleString('vi-VN') : 'N/A'}</p>
+                      <p style={{ margin: 0, gridColumn: '1 / -1' }}>
+                        <strong>📝 Nội dung chuyển khoản:</strong>{' '}
+                        <span style={{ 
+                          fontFamily: 'monospace', 
+                          background: '#e8f5e9', 
+                          padding: '4px 8px', 
+                          borderRadius: '4px', 
+                          color: '#1b5e20', 
+                          fontWeight: 'bold',
+                          letterSpacing: '0.5px' 
+                        }}>
+                          {donHangSelected.payment_info?.display_description || 'Không có nội dung'}
+                        </span>
+                      </p>
+                      {/* <p style={{ margin: 0, gridColumn: '1 / -1', fontSize: '12px', color: '#6b7280' }}><strong>🔗 Mã chuẩn chi/Ref:</strong> {donHangSelected.payment_info?.bank_reference || donHangSelected.payos_order_code || 'N/A'}</p> */}
+                    </div>
+                  </div>
+                )}
 
                 <h5>🥤 Danh sách đồ uống</h5>
                 <table className="dh-invoice-items-table">
@@ -283,7 +482,6 @@ const QuanLyDonHang = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* 🛠️ SỬA LỖI ĐỌC SẢN PHẨM: Khớp các biến final_unit_price và subtotal từ OrderItemSchema */}
                     {donHangSelected.items?.map((item, idx) => (
                       <tr key={idx}>
                         <td>
@@ -309,81 +507,6 @@ const QuanLyDonHang = () => {
                   <h4>TỔNG THANH TOÁN: <span>{(donHangSelected.total_amount || 0).toLocaleString('vi-VN')} đ</span></h4>
                 </div>
               </div>
-
-              {/* BỘ ĐIỀU PHỐI DÀNH CHO ADMIN */}
-              <div className="dh-admin-controls">
-                <h5>⚙️ Trung tâm điều phối đơn hàng</h5>
-                
-                {/* 1. Chọn tài xế giao hàng */}
-                {['pending', 'preparing', 'shipping'].includes(donHangSelected.status) && (
-                  <div className="dh-control-group">
-                    <label>Chỉ định Nhân viên giao hàng (Shipper):</label>
-                    <div className="dh-flex-row">
-                      <select value={shipperSelected} onChange={(e) => setShipperSelected(e.target.value)}>
-                        <option value="">-- Chọn Shipper đang rảnh --</option>
-                        {danhSachShipper.map(ship => (
-                          <option key={ship._id} value={ship._id}>🏍️ {ship.full_name} ({ship.phone})</option>
-                        ))}
-                      </select>
-                      <button 
-                        className="dh-btn-save-shipper"
-                        disabled={!shipperSelected}
-                        onClick={() => handleCapNhatTrangThai(donHangSelected._id, 'preparing', { shipper_id: shipperSelected })}
-                      >
-                        Gán tài xế
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. Cập nhật tiến độ luồng xử lý đơn */}
-                <div className="dh-control-group">
-                  <label>Chuyển đổi trạng thái nhanh:</label>
-                  <div className="dh-buttons-status-row">
-                    {donHangSelected.status === 'pending' && (
-                      <button className="btn-st-confirm" onClick={() => handleCapNhatTrangThai(donHangSelected._id, 'preparing')}>
-                        📦 Duyệt & Chuyển vào Pha Chế
-                      </button>
-                    )}
-                    {donHangSelected.status === 'preparing' && (
-                      <button className="btn-st-ship" onClick={() => handleCapNhatTrangThai(donHangSelected._id, 'shipping')}>
-                        🏍️ Bàn giao cho Shipper đi giao
-                      </button>
-                    )}
-                    {['preparing', 'shipping'].includes(donHangSelected.status) && (
-                      <button className="btn-st-complete" onClick={() => handleCapNhatTrangThai(donHangSelected._id, 'completed')}>
-                        🟢 Hoàn thành đơn (Đã giao & Nhận tiền)
-                      </button>
-                    )}
-                    
-                    {/* Luồng Hủy đơn / Báo BOM */}
-                    {!['completed', 'failed', 'cancelled'].includes(donHangSelected.status) && (
-                      <div className="dh-bom-input-box">
-                        <input 
-                          type="text" 
-                          placeholder="Nhập lý do hủy hoặc lý do khách BOM..." 
-                          value={lyDoHuy} 
-                          onChange={(e) => setLyDoHuy(e.target.value)}
-                        />
-                        <button 
-                          className="btn-st-fail" 
-                          disabled={!lyDoHuy} 
-                          onClick={() => handleCapNhatTrangThai(donHangSelected._id, 'cancelled', { cancel_reason: lyDoHuy })}
-                        >
-                          ❌ Hủy đơn / Báo BOM
-                        </button>
-                      </div>
-                    )}
-
-                    {['failed', 'cancelled'].includes(donHangSelected.status) && (
-                      <div className="dh-alert-failed-box">
-                        <AlertTriangle size={16}/> <strong>Đơn đã bị đóng:</strong> {donHangSelected.cancel_reason || 'Hệ thống huỷ tự động'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
             </div>
 
             <div className="dh-modal-footer">
@@ -393,6 +516,65 @@ const QuanLyDonHang = () => {
               <button className="dh-btn-close-text" onClick={() => setModalOpen(false)}>Đóng lại</button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CUSTOM XÁC NHẬN ĐỔI TRẠNG THÁI / NHẬP LÝ DO HỦY */}
+      {confirmModalOpen && pendingUpdate.donHang && (
+        <div className="dh-modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="dh-modal-content" style={{ maxWidth: '450px' }}>
+            <div className="dh-modal-header" style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+              <h4 style={{ color: '#1f2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertTriangle size={20} color="#f59e0b" /> Xác nhận thay đổi
+              </h4>
+            </div>
+            <div className="dh-modal-body" style={{ padding: '20px' }}>
+              <p style={{ marginBottom: '15px', fontSize: '14px', color: '#4b5563', lineHeight: '1.6' }}>
+                Bạn có chắc chắn muốn chuyển đơn hàng <strong>#{String(pendingUpdate.donHang._id).slice(-8).toUpperCase()}</strong> sang trạng thái <br/>
+                <span className="dh-pay-badge" style={{ backgroundColor: '#e0f2fe', color: '#0369a1', marginTop: '6px', display: 'inline-block', textTransform: 'none', fontWeight: 'bold' }}>
+                  {STATUS_VI[pendingUpdate.trangThaiMoi] || pendingUpdate.trangThaiMoi}
+                </span>?
+              </p>
+
+              {['cancelled', 'failed'].includes(pendingUpdate.trangThaiMoi) && (
+                <div style={{ marginTop: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>
+                    Lý do thay đổi trạng thái <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    className="dh-confirm-textarea"
+                    placeholder="Vui lòng nhập lý do cụ thể vào đây..."
+                    value={lyDoHuyInput}
+                    onChange={(e) => setLyDoHuyInput(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #d1d5db',
+                      fontSize: '14px',
+                      outline: 'none',
+                      resize: 'none'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="dh-modal-footer" style={{ gap: '10px', justifyContent: 'flex-end', borderTop: '1px solid #e5e7eb' }}>
+              <button 
+                onClick={() => setConfirmModalOpen(false)}
+                style={{ padding: '8px 16px', background: '#e5e7eb', color: '#4b5563', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' }}
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                onClick={handleXacNhanCapNhat}
+                style={{ padding: '8px 16px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}
+              >
+                Xác nhận
+              </button>
+            </div>
           </div>
         </div>
       )}

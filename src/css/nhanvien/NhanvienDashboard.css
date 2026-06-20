@@ -147,7 +147,13 @@
 .bg-shipping { background: var(--shipping-color); }
 .bg-completed { background: var(--completed-color); }
 .bg-cancelled { background: var(--cancelled-color); }
+.bg-ready { background: #4caf50 !important; }   /* Màu xanh lá cho Đã pha chế xong */
+.bg-failed { background: #e53935 !important; }  /* Màu đỏ đậm cho Giao thất bại */
 
+
+/* --- 2. BỔ SUNG HIỆU ỨNG KHI CLICK CHỌN (ACTIVE) 2 TAB NÀY --- */
+.nv-tab-item.ready.active { background: #f6ffed; color: #4caf50; }
+.nv-tab-item.failed.active { background: #fff1f0; color: #e53935; }
 /* CONTENT AREA */
 .nv-content-area {
   flex: 1;
@@ -248,6 +254,26 @@
 .nv-summary-total { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
 .nv-total-amount { font-size: 16px; font-weight: bold; color: #ff4d4f; }
 .nv-payment-status { font-weight: 500; font-size: 12px; }
+.nv-transfer-success-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #14532d;
+  font-size: 12px;
+}
+.nv-transfer-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: #15803d;
+  font-weight: 700;
+}
+.nv-transfer-success-box p {
+  margin: 3px 0;
+}
 
 /* ACTIONS BUTTONS */
 .nv-card-actions {
@@ -357,3 +383,132 @@
 .nv-modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .nv-btn-secondary { background: #e0e0e0; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
 .nv-btn-primary { background: #4caf50; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+/* Lớp nền mờ phủ toàn màn hình */
+.nv-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+/* Hộp thoại Modal */
+.nv-modal-box {
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.animate-popup {
+  animation: modalShow 0.25s ease-out;
+}
+
+@keyframes modalShow {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.nv-modal-header {
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eef0f2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nv-modal-header h4 {
+  margin: 0;
+  color: #dc3545;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.nv-modal-close-x {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+}
+
+.nv-modal-body {
+  padding: 20px;
+}
+
+.nv-modal-body p {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 14px;
+  color: #495057;
+}
+
+.nv-form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #333;
+}
+
+.nv-form-group .required {
+  color: #dc3545;
+}
+
+.nv-form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13.5px;
+  resize: none;
+  outline: none;
+}
+
+.nv-form-group textarea:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+}
+
+.nv-modal-footer {
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #eef0f2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.nv-btn-modal {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.nv-btn-modal.cancel-back {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.nv-btn-modal.submit-kill {
+  background: #dc3545;
+  color: white;
+}
+
+.nv-btn-modal:hover {
+  opacity: 0.9;
+}

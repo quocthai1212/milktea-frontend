@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, LockKeyhole, LogIn, Mail, UserPlus } from 'lucide-react';
+import { ArrowLeft, LockKeyhole, LogIn, Mail, UserPlus, Eye, EyeOff } from 'lucide-react';
 import '../css/DangNhap.css';
 
 const DangNhap = () => {
@@ -8,11 +8,18 @@ const DangNhap = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [thongBao, setThongBao] = useState({ kieu: '', noiDung: '' });
   const [loading, setLoading] = useState(false);
+  
+  // 🎯 Quản lý ẩn/hiện mật khẩu
+  const [showPassword, setShowPassword] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e) => {
@@ -28,6 +35,7 @@ const DangNhap = () => {
 
       const data = await response.json();
 
+      // ✅ THÀNH CÔNG (Mã status 200)
       if (response.ok) {
         setThongBao({ kieu: 'thanhcong', noiDung: data.message });
         localStorage.setItem('token', data.token);
@@ -40,7 +48,6 @@ const DangNhap = () => {
         } else if (Number(data.role_id) === 2) {
           navigate('/nhanvien');
         } else if (Number(data.role_id) === 4) {
-          // 🎯 THÊM QUYỀN SỐ 4: Chuyển hướng tài xế về giao diện Shipper
           navigate('/shipper');
         } else if (Number(data.role_id) === 3) {
           if (data.shipping_address?.address_detail) {
@@ -62,10 +69,26 @@ const DangNhap = () => {
         } else {
           navigate('/', { replace: true });
         }
-      } else {
-        setThongBao({ kieu: 'loi', noiDung: data.message || 'Đăng nhập thất bại!' });
+      } 
+      // ❌ THẤT BẠI (Mã status 400, 401, 403, ...)
+      else {
+        // 🔥 Khớp mã lỗi 403 từ Backend khi tài khoản dính trạng thái khóa
+        if (response.status === 403) {
+          setThongBao({ 
+            kieu: 'khoa_taikhoan', 
+            // Ưu tiên hiển thị câu chữ cảnh báo liên hệ Admin từ Backend trả về
+            noiDung: data.message || 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với người quản trị!' 
+          });
+        } else {
+          // Các lỗi sai mật khẩu (hiển thị số lần còn lại), sai email hệ thống
+          setThongBao({ 
+            kieu: 'loi', 
+            noiDung: data.message || 'Đăng nhập không thành công!' 
+          });
+        }
       }
-    } catch {
+    } catch (error) {
+      console.error("Lỗi kết nối API đăng nhập:", error);
       setThongBao({ kieu: 'loi', noiDung: 'Không thể kết nối tới Server Backend!' });
     } finally {
       setLoading(false);
@@ -93,8 +116,13 @@ const DangNhap = () => {
             <p>Nhập thông tin tài khoản của bạn</p>
           </div>
 
+          {/* 🔥 Phân nhóm Class hiển thị CSS động dựa trên kiểu lỗi phản hồi */}
           {thongBao.noiDung && (
-            <div className={thongBao.kieu === 'thanhcong' ? 'auth-alert auth-alert--success' : 'auth-alert auth-alert--error'}>
+            <div className={
+              thongBao.kieu === 'thanhcong' ? 'auth-alert auth-alert--success' : 
+              thongBao.kieu === 'khoa_taikhoan' ? 'auth-alert auth-alert--lock' : 
+              'auth-alert auth-alert--error'
+            }>
               {thongBao.noiDung}
             </div>
           )}
@@ -122,15 +150,22 @@ const DangNhap = () => {
                 <LockKeyhole size={18} />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Nhập mật khẩu"
                   required
                 />
+                <span className="toggle-password" onClick={togglePasswordVisibility}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
               </div>
             </div>
+
+            <Link to="/quenmk" className="auth-link-btn">
+              Quên mật khẩu?
+            </Link>
 
             <button type="submit" disabled={loading} className="auth-submit-btn">
               {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}

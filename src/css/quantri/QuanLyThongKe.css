@@ -71,9 +71,15 @@
 .tk-spin {
   animation: tk-anim-spin 1s linear infinite;
 }
+
 @keyframes tk-anim-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ==========================================================================
@@ -160,6 +166,55 @@
   background-color: #0f172a;
   border-color: #0f172a;
   color: #ffffff;
+}
+
+.tk-date-range-filter {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.tk-date-range-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.tk-date-range-filter input {
+  height: 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 10px;
+  color: #0f172a;
+  background: #fff;
+  font: inherit;
+  font-size: 12.5px;
+}
+
+.tk-clear-date-btn {
+  height: 32px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #fff5f5;
+  color: #b91c1c;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tk-date-chart-note {
+  width: 100%;
+  margin-left: auto;
+  color: #4f46e5;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
 }
 
 /* ==========================================================================
@@ -298,11 +353,26 @@
 }
 
 /* Định dạng cột căn biên */
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
-.text-muted { color: #94a3b8; font-size: 13px; }
-.text-success { color: #16a34a !important; }
-.text-bold { font-weight: 700; }
+.text-center {
+  text-align: center !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-muted {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.text-success {
+  color: #16a34a !important;
+}
+
+.text-bold {
+  font-weight: 700;
+}
 
 /* Trạng thái Loading / Empty rỗng */
 .tk-status-box {
@@ -326,179 +396,212 @@
 /* ==========================================================================
    🔘 NÚT XEM CHI TIẾT TRÊN BẢNG CHÍNH
    ========================================================================== */
-   .tk-btn-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #f1f5f9;
-    color: #4f46e5;
-    border: 1px solid #e2e8f0;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12.5px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .tk-btn-action:hover {
-    background-color: #4f46e5;
-    color: #ffffff;
-    border-color: #4f46e5;
-    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
-  }
-  
-  /* ==========================================================================
+.tk-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f1f5f9;
+  color: #4f46e5;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tk-btn-action:hover {
+  background-color: #4f46e5;
+  color: #ffffff;
+  border-color: #4f46e5;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+}
+
+/* ==========================================================================
      🖼️ CẤU TRÚC LỚP PHỦ MODAL POPUP (DRILL-DOWN)
      ========================================================================== */
-  .tk-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 20px;
-    animation: tkFadeIn 0.2s ease-out;
-  }
-  
-  .tk-modal-content {
-    background-color: #ffffff;
-    width: 100%;
-    max-width: 900px;
-    border-radius: 16px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    display: flex;
-    flex-direction: column;
-    max-height: 85vh;
-    animation: tkSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  
-  .tk-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid #f1f5f9;
-  }
-  
-  .tk-modal-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: #0f172a;
-    margin: 0;
-  }
-  
-  .tk-modal-close {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-  }
-  
-  .tk-modal-close:hover {
-    background-color: #f1f5f9;
-    color: #334155;
-  }
-  
-  .tk-modal-body {
-    padding: 24px;
-    overflow-y: auto;
-    background-color: #f8fafc;
-  }
-  
-  /* ==========================================================================
+.tk-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: tkFadeIn 0.2s ease-out;
+}
+
+.tk-modal-content {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  animation: tkSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tk-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tk-modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.tk-modal-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.tk-modal-close:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.tk-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  background-color: #f8fafc;
+}
+
+/* ==========================================================================
      📊 BẢNG DỮ LIỆU TRONG MODAL CHI TIẾT
      ========================================================================== */
-  .tk-modal-table-container {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.tk-modal-table-container {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tk-modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  text-align: left;
+}
+
+.tk-modal-table th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tk-modal-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: top;
+}
+
+.tk-code-text {
+  font-family: monospace;
+  background-color: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.tk-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.tk-user-info span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.tk-modal-items-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tk-modal-items-list li {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.text-primary {
+  color: #4f46e5 !important;
+  font-weight: 700;
+}
+
+.tk-modal-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 40px 0;
+  font-weight: 500;
+}
+
+.tk-modal-loading {
+  text-align: center;
+  color: #4f46e5;
+  padding: 40px 0;
+  font-weight: 600;
+}
+
+/* Hiệu ứng chuyển động mượt mà */
+@keyframes tkFadeIn {
+  from {
+    opacity: 0;
   }
-  
-  .tk-modal-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-    text-align: left;
+
+  to {
+    opacity: 1;
   }
-  
-  .tk-modal-table th {
-    background-color: #f1f5f9;
-    color: #475569;
-    font-weight: 700;
-    padding: 12px 16px;
-    border-bottom: 1px solid #e2e8f0;
+}
+
+@keyframes tkSlideUp {
+  from {
+    transform: translateY(15px);
+    opacity: 0;
   }
-  
-  .tk-modal-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-    vertical-align: top;
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
-  
-  .tk-code-text {
-    font-family: monospace;
-    background-color: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #0f172a;
-    font-weight: 600;
-  }
-  
-  .tk-user-info {
-    display: flex;
-    flex-direction: column;
-  }
-  .tk-user-info span {
-    font-size: 12px;
-    color: #64748b;
-  }
-  
-  .tk-modal-items-list {
-    margin: 0;
-    padding-left: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .tk-modal-items-list li {
-    font-size: 13px;
-    font-weight: 500;
-  }
-  
-  .text-primary { color: #4f46e5 !important; font-weight: 700; }
-  .tk-modal-empty { text-align: center; color: #64748b; padding: 40px 0; font-weight: 500; }
-  .tk-modal-loading { text-align: center; color: #4f46e5; padding: 40px 0; font-weight: 600; }
-  
-  /* Hiệu ứng chuyển động mượt mà */
-  @keyframes tkFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes tkSlideUp {
-    from { transform: translateY(15px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  /* ==========================================================================
-   📊 CARD CHỨA BIỂU ĐỒ RECHARTS
+}
+
+/* ==========================================================================
+   📊 FIX BIỂU ĐỒ: GIỮ CHART HIỆN TẠI KHI ĐỔI TỪ NGÀY - ĐẾN NGÀY
    ========================================================================== */
+
 .tk-chart-card {
+  position: relative;
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
@@ -516,21 +619,145 @@
   padding-bottom: 10px;
   border-bottom: 1px dashed #f1f5f9;
 }
+
+.tk-chart-box {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  min-height: 320px;
+}
+
+/* Lớp phủ loading nhỏ, không làm mất biểu đồ cũ */
+.tk-chart-loading-layer {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Giúp biểu đồ không bị nhấp nháy khi Recharts cập nhật data */
+.tk-chart-box .recharts-responsive-container {
+  transition: opacity 0.2s ease;
+}
+
+/* Date filter gọn lại, không bị vỡ dòng xấu */
+.tk-filter-sub {
+  flex-wrap: wrap;
+}
+
+.tk-date-range-filter {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.tk-date-range-filter input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.tk-clear-date-btn {
+  transition: all 0.15s ease;
+}
+
+.tk-clear-date-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+/* Ghi chú khi đang xem theo ngày */
+.tk-date-chart-note {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  color: #4f46e5;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Responsive cho màn nhỏ */
+@media (max-width: 900px) {
+  .tk-filter-sub {
+    align-items: stretch;
+  }
+
+  .tk-date-range-filter {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .tk-date-range-filter label {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .tk-date-range-filter input {
+    width: 100%;
+  }
+
+  .tk-clear-date-btn {
+    min-width: 120px;
+  }
+
+  .tk-date-chart-note {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .tk-chart-card {
+    padding: 14px;
+  }
+
+  .tk-chart-box {
+    height: 280px;
+    min-height: 280px;
+  }
+
+  .tk-chart-loading-layer {
+    top: 8px;
+    right: 8px;
+    font-size: 11.5px;
+    padding: 6px 10px;
+  }
+}
+
 /* Màu nền phân biệt số lượng đơn thành công & bom hàng */
-.tk-counter-badge.success-bg, .tk-qty-badge.success-bg {
+.tk-counter-badge.success-bg,
+.tk-qty-badge.success-bg {
   background-color: #ecfdf5;
   color: #059669;
   border: 1px solid #a7f3d0;
 }
 
-.tk-counter-badge.danger-bg, .tk-qty-badge.danger-bg {
+.tk-counter-badge.danger-bg,
+.tk-qty-badge.danger-bg {
   background-color: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
   font-weight: bold;
 }
 
-.tk-counter-badge.muted-bg, .tk-qty-badge.muted-bg {
+.tk-counter-badge.muted-bg,
+.tk-qty-badge.muted-bg {
   background-color: #f8fafc;
   color: #94a3b8;
   border: 1px solid #e2e8f0;
@@ -573,8 +800,15 @@
   font-weight: 800;
 }
 
-.m-badge.badge-success { background-color: #d1fae5; color: #065f46; }
-.m-badge.badge-danger { background-color: #fee2e2; color: #991b1b; }
+.m-badge.badge-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.m-badge.badge-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
 
 /* Lý do hủy đơn hàng */
 .tk-failed-wrapper {
@@ -615,4 +849,80 @@
 
 .tk-modal-row.status-failed {
   background-color: #fffafb;
+}
+
+
+
+.tk-filter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background-color: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  box-shadow: none;
+}
+
+.tk-filter-btn:disabled:hover {
+  background-color: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+.tk-filter-btn:disabled.active {
+  background-color: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+/* Date input wrapper: show formatted dd/mm/yyyy on the right while keeping native picker */
+.tk-date-input {
+  position: relative;
+  display: inline-block;
+}
+
+.tk-date-input input[type="date"] {
+  /* ensure room for formatted text */
+  padding-right: 110px;
+  min-width: 180px;
+}
+
+.tk-date-formatted {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #0f172a;
+  font-weight: 800;
+  background: transparent;
+  font-size: 13px;
+}
+
+/* Summary row: keep left and right cards aligned and balanced */
+.tk-summary-row {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 18px;
+}
+
+.tk-summary-row .tk-summary-card {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+}
+
+.tk-summary-card--right {
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1db 100%);
+  border-color: #ffe4b5;
+}
+
+@media (max-width: 900px) {
+  .tk-summary-row {
+    flex-direction: column;
+  }
+  .tk-date-input input[type="date"] {
+    min-width: 140px;
+    padding-right: 90px;
+  }
 }

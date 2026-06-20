@@ -69,12 +69,13 @@
   transform: translateY(-1px);
 }
 
+/* 🌟 FIX: Đổi align-items từ stretch sang start để hình bên trái không bị co giãn theo thông báo lỗi */
 .auth-shell {
   width: min(1050px, 100%);
   display: grid;
   grid-template-columns: 1fr 440px;
   gap: 24px;
-  align-items: stretch;
+  align-items: start;
   position: relative;
   z-index: 2;
 }
@@ -82,6 +83,7 @@
 .auth-shell--register {
   width: min(1120px, 100%);
   grid-template-columns: 0.9fr 1.1fr;
+  align-items: start;
 }
 
 .auth-brand-panel,
@@ -94,9 +96,11 @@
   backdrop-filter: blur(14px);
 }
 
+/* 🌟 FIX: Khóa cứng tỷ lệ hiển thị ảnh nền bằng background-size/position và repeat */
 .auth-brand-panel {
   padding: 46px;
   min-height: 520px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -104,7 +108,10 @@
   position: relative;
   background:
     linear-gradient(135deg, rgba(47, 37, 25, 0.72), rgba(47, 37, 25, 0.34)),
-    url("https://images.unsplash.com/photo-1507133750040-4a8f57021571?q=80&w=1200&auto=format&fit=crop") center/cover;
+    url("https://images.unsplash.com/photo-1507133750040-4a8f57021571?q=80&w=1200&auto=format&fit=crop");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   color: #fff;
 }
 
@@ -169,12 +176,14 @@
   font-size: 15px;
 }
 
+/* 🌟 FIX: Đổi sang flex-start và height auto giúp form co giãn mượt mà */
 .auth-card,
 .login-card {
   padding: 34px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  height: auto;
 }
 
 .auth-card--wide {
@@ -218,6 +227,7 @@
   text-align: left;
 }
 
+/* 🌟 FIX: Thêm word-break và animation chống tràn chữ bung khối */
 .auth-alert,
 .alert-success,
 .alert-error {
@@ -227,6 +237,13 @@
   font-weight: 650;
   margin-bottom: 18px;
   text-align: left;
+  word-break: break-word;
+  animation: slideDown 0.22s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .auth-alert--success,
@@ -590,7 +607,7 @@
 .dgky-gps-textarea:focus { border-color: rgba(212,163,115,.95); box-shadow: 0 0 0 4px rgba(212,163,115,.16); }
 .dgky-gps-coords { color: var(--text-muted); font-size: 12px; }
 .dgky-gps-re-trigger { border: none; background: transparent; color: var(--primary-hover); font-weight: 800; cursor: pointer; }
-.dgky-submit-btn { width: 100%; min-height: 50px; border: none; border-radius: 999px; background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: #fff; font-weight: 850; cursor: pointer; box-shadow: 0 14px 24px rgba(184,135,91,.22); }
+.dgky-submit-btn { width: 100%; min-height: 50px; border: none; border-radius: 999px; background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: #fff; font-weight: 850; cursor: pointer; box-shadow: 0 14px 24px rgba(184, 135, 91,.22); }
 .dgky-submit-btn:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
 .dgky-bottom-redirect { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border-soft); text-align: center; color: var(--text-muted); }
 .dgky-redirect-link { color: var(--primary-hover); font-weight: 850; text-decoration: none; }

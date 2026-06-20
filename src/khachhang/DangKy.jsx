@@ -91,19 +91,67 @@ const DangKy = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // 🔥 HÀM BẮT DỮ LIỆU TẬP TRUNG (VALIDATION)
+  const validateForm = () => {
+    // 1. Kiểm tra Họ và Tên
+    const tenChuan = formData.full_name.trim();
+    if (tenChuan.length < 2) {
+      setThongBao({ kieu: 'loi', noiDung: 'Họ và tên phải chứa ít nhất 2 ký tự!' });
+      return false;
+    }
+    const regexTen = /^[\p{L}\s]+$/u;
+    if (!regexTen.test(tenChuan)) {
+      setThongBao({ kieu: 'loi', noiDung: 'Họ và tên không được chứa số hoặc ký tự đặc biệt!' });
+      return false;
+    }
+
+    // 2. Kiểm tra Số điện thoại
+    const sdtChuan = formData.phone.trim();
+    if (sdtChuan) {
+      const regexSDT = /^(03|05|07|08|09)\d{8}$/;
+      if (!regexSDT.test(sdtChuan)) {
+        setThongBao({ kieu: 'loi', noiDung: 'Số điện thoại không hợp lệ! (Phải gồm 10 số và bắt đầu bằng 03, 05, 07, 08, 09)' });
+        return false;
+      }
+    } else {
+      setThongBao({ kieu: 'loi', noiDung: 'Vui lòng cung cấp Số điện thoại để liên hệ giao hàng!' });
+      return false;
+    }
+
+    // 3. 🎯 Kiểm tra Mật khẩu Mạnh (Tối thiểu 8 ký tự, 1 hoa, 1 thường, 1 số, 1 đặc biệt)
+    const matKhau = formData.password;
+// 🌟 ĐÚNG CHUẨN: Dấu chấm (.) đứng cuối cùng trước {8,} đại diện cho việc chấp nhận MỌI ký tự
+    const regexMatKhauManh = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    
+    if (!regexMatKhauManh.test(matKhau)) {
+      setThongBao({ 
+        kieu: 'loi', 
+        noiDung: 'Mật khẩu quá yếu! Phải dài ít nhất 8 ký tự, bao gồm ít nhất: 1 chữ hoa, 1 chữ thường, 1 chữ số và 1 ký tự đặc biệt (@$!%*?&)' 
+      });
+      return false;
+    }
+
+    // 4. Kiểm tra Nhập lại Mật khẩu
+    if (formData.password !== formData.confirmPassword) {
+      setThongBao({ kieu: 'loi', noiDung: 'Mật khẩu nhập lại không trùng khớp!' });
+      return false;
+    }
+
+    // 5. Kiểm tra Địa chỉ
+    if (trangThaiGPS !== 'thanh_cong' || !diaChiChu.trim()) {
+      setThongBao({ kieu: 'loi', noiDung: 'Vui lòng định vị hoặc nhập địa chỉ giao hàng trước khi đăng ký!' });
+      return false;
+    }
+
+    return true; 
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setThongBao({ kieu: '', noiDung: '' });
 
-    if (formData.password !== formData.confirmPassword) {
-      setThongBao({ kieu: 'loi', noiDung: 'Mật khẩu nhập lại không trùng khớp!' });
-      setLoading(false);
-      return;
-    }
-
-    if (trangThaiGPS !== 'thanh_cong' || !diaChiChu.trim()) {
-      setThongBao({ kieu: 'loi', noiDung: 'Vui lòng định vị hoặc nhập địa chỉ giao hàng trước khi đăng ký!' });
+    if (!validateForm()) {
       setLoading(false);
       return;
     }
@@ -113,25 +161,26 @@ const DangKy = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email,
+          email: formData.email.trim().toLowerCase(),
           password: formData.password,
-          full_name: formData.full_name,
-          phone: formData.phone,
+          full_name: formData.full_name.trim(),
+          phone: formData.phone.trim(),
           latitude: toaDoGPS.latitude,
           longitude: toaDoGPS.longitude,
-          address_text: diaChiChu,
+          address_text: diaChiChu.trim(),
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setThongBao({ kieu: 'thanhcong', noiDung: data.message });
+        setThongBao({ kieu: 'thanhcong', noiDung: data.message || 'Đăng ký tài khoản thành công!' });
         setTimeout(() => navigate('/login'), 2500);
       } else {
         setThongBao({ kieu: 'loi', noiDung: data.message || 'Đăng ký thất bại!' });
       }
-    } catch {
+    } catch (error) {
+      console.error("Lỗi đăng ký:", error);
       setThongBao({ kieu: 'loi', noiDung: 'Không thể kết nối tới Server Backend!' });
     } finally {
       setLoading(false);
@@ -187,7 +236,7 @@ const DangKy = () => {
                 <label htmlFor="phone">Số điện thoại</label>
                 <div className="auth-input-wrap">
                   <Phone size={18} />
-                  <input id="phone" type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="Nhập số điện thoại" />
+                  <input id="phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Nhập số điện thoại (10 chữ số)" required />
                 </div>
               </div>
 
@@ -195,7 +244,8 @@ const DangKy = () => {
                 <label htmlFor="password">Mật khẩu</label>
                 <div className="auth-input-wrap">
                   <LockKeyhole size={18} />
-                  <input id="password" type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Nhập mật khẩu" required />
+                  {/* Thay đổi placeholder để gợi ý người dùng */}
+                  <input id="password" type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Mật khẩu bảo mật mạnh" required />
                 </div>
               </div>
 
@@ -249,7 +299,7 @@ const DangKy = () => {
                   <textarea
                     value={diaChiChu}
                     onChange={(e) => setDiaChiChu(e.target.value)}
-                    placeholder="Nhập số nhà, tên đường, xã/phường, huyện/thành phố, tỉnh..."
+                    placeholder="Nhập cụ thể số nhà, tên đường, xã/phường, quận/huyện..."
                     required
                     className="auth-textarea"
                   />

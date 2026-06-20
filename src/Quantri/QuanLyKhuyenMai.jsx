@@ -10,6 +10,7 @@ const QuanLyKhuyenMai = () => {
   const [moXoaModal, setMoXoaModal] = useState(false);
   const [maCanXoa, setMaCanXoa] = useState(null);
 
+  // 🌟 ĐÃ THÊM: tích hợp trường promotion_type vào state quản lý dữ liệu form
   const [formData, setFormData] = useState({
     code: '',
     description: '',
@@ -17,6 +18,7 @@ const QuanLyKhuyenMai = () => {
     start_date: '',
     end_date: '',
     usage_limit: '',
+    promotion_type: 'public', // Mặc định ban đầu là công khai
     is_active: true
   });
   
@@ -75,6 +77,7 @@ const QuanLyKhuyenMai = () => {
     }
   };
 
+  // 🌟 ĐÃ CẬP NHẬT: Đổ dữ liệu promotion_type từ database lên form khi bấm Sửa
   const handleEditClick = (ma) => {
     setDangSuaId(ma._id);
     setFormData({
@@ -84,14 +87,25 @@ const QuanLyKhuyenMai = () => {
       start_date: ma.start_date.substring(0, 10),
       end_date: ma.end_date.substring(0, 10),
       usage_limit: ma.usage_limit || '',
+      promotion_type: ma.promotion_type || 'public',
       is_active: ma.is_active
     });
     setHienForm(true);
   };
 
+  // 🌟 ĐÃ CẬP NHẬT: Trả loại mã về 'public' khi làm mới form
   const handleResetForm = () => {
     setDangSuaId(null);
-    setFormData({ code: '', description: '', discount_value: '', start_date: '', end_date: '', usage_limit: '', is_active: true });
+    setFormData({ 
+      code: '', 
+      description: '', 
+      discount_value: '', 
+      start_date: '', 
+      end_date: '', 
+      usage_limit: '', 
+      promotion_type: 'public', 
+      is_active: true 
+    });
   };
 
   const formatNgay = (dateStr) => {
@@ -107,18 +121,18 @@ const QuanLyKhuyenMai = () => {
         </div>
       )}
 
-      {/* 🖼️ THANH ĐẦU TRANG CĂN GIỮA ĐỒNG BỘ */}
+      {/* 🖼️ THANH ĐẦU TRANG */}
       <div className="qlkm-header-row">
         <div className="qlkm-title-block">
           <h2 className="qlkm-main-title">🎟️ QUẢN LÝ MÃ GIẢM GIÁ</h2>
-          <p className="qlkm-sub-title">Cấu hình hệ thống mã ưu đãi, giới hạn tổng lượt dùng và thời gian áp dụng trên toàn sàn.</p>
+          <p className="qlkm-sub-title">Cấu hình hệ thống mã ưu đãi công khai ăn ngay hoặc mã thu thập giới hạn giữ chỗ vào ví khách.</p>
         </div>
         <button className="qlkm-btn-add-new" onClick={() => { handleResetForm(); setHienForm(true); }}>
           <Plus size={16} style={{ marginRight: '6px' }} /> Thêm Mã Mới
         </button>
       </div>
 
-      {/* 🎛️ POP-UP DIỄN HỌA FORM NHẬP LIỆU */}
+      {/* 🎛️ POP-UP FORM NHẬP LIỆU */}
       {hienForm && (
         <div className="qlkm-modal-overlay">
           <div className="qlkm-box-custom qlkm-modal-box-custom">
@@ -128,10 +142,36 @@ const QuanLyKhuyenMai = () => {
             </h3>
             <form onSubmit={handleSavePromotion} autoComplete="off" noValidate>
               
-              {/* 🚀 BẪY CHROME: Đánh lạc hướng tính năng tự động điền nâng cao */}
               <div style={{ position: 'absolute', opacity: 0, zIndex: -1, height: 0, overflow: 'hidden' }}>
                 <input type="text" name="chrome_fake_user" autoComplete="username" tabIndex="-1" />
                 <input type="password" name="chrome_fake_pass" autoComplete="current-password" tabIndex="-1" />
+              </div>
+
+              {/* 🌟 ĐÃ THÊM: Cụm lựa chọn loại hình mã áp dụng */}
+              <div className="qlkm-form-group" style={{ marginBottom: '16px' }}>
+                <label className="qlkm-form-label" style={{ fontWeight: '600' }}>Hình thức áp dụng mã *</label>
+                <div style={{ display: 'flex', gap: '20px', marginTop: '6px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                    <input 
+                      type="radio" 
+                      name="promotion_type" 
+                      value="public" 
+                      checked={formData.promotion_type === 'public'} 
+                      onChange={handleInputChange} 
+                    />
+                    🌐 Công khai (Ai nhập cũng dùng được)
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                    <input 
+                      type="radio" 
+                      name="promotion_type" 
+                      value="collectible" 
+                      checked={formData.promotion_type === 'collectible'} 
+                      onChange={handleInputChange} 
+                    />
+                    📥 Thu thập (Phải bấm nhận mới được dùng)
+                  </label>
+                </div>
               </div>
 
               {/* Ô VOUCHER */}
@@ -167,9 +207,11 @@ const QuanLyKhuyenMai = () => {
                 </div>
               </div>
 
-              {/* Ô GIỚI HẠN LƯỢT DÙNG */}
+              {/* Ô GIỚI HẠN SỐ LƯỢNG (Tự động thay đổi tiêu đề theo loại mã chọn ở trên) */}
               <div className="qlkm-form-group">
-                <label className="qlkm-form-label">Giới hạn số lượt dùng (Để trống = Vô hạn)</label>
+                <label className="qlkm-form-label">
+                  {formData.promotion_type === 'public' ? 'Giới hạn tổng lượt dùng tối đa' : 'Tổng số lượng phát hành vào ví'} (Để trống = Không giới hạn)
+                </label>
                 <div className="auth-input-wrap">
                   <input 
                     type="number" 
@@ -177,12 +219,12 @@ const QuanLyKhuyenMai = () => {
                     value={formData.usage_limit} 
                     onChange={handleInputChange} 
                     autoComplete="new-password"
-                    placeholder="Tổng số lượng mã phát ra" 
+                    placeholder={formData.promotion_type === 'public' ? "Số lượt dùng đơn hàng tối đa" : "Số lượng mã cho phép khách ấn nhận"} 
                   />
                 </div>
               </div>
 
-              {/* CỤM ĐÈ NGÀY THÁNG */}
+              {/* CỤM NGÀY THÁNG */}
               <div className="qlkm-form-row">
                 <div className="qlkm-form-group">
                   <label className="qlkm-form-label">Bắt đầu từ ngày *</label>
@@ -222,7 +264,7 @@ const QuanLyKhuyenMai = () => {
                     value={formData.description} 
                     onChange={handleInputChange} 
                     autoComplete="new-password"
-                    placeholder="Hiển thị cho khách khi thanh toán..." 
+                    placeholder="Hiển thị cho khách khi xem mã..." 
                   />
                 </div>
               </div>
@@ -252,10 +294,10 @@ const QuanLyKhuyenMai = () => {
                 <tr>
                   <th>Mã Giảm Giá / Chương Trình</th>
                   <th>Mức Chiết Khấu</th>
-                  <th>Lượt Đã Dùng / Giới Hạn</th>
+                  <th style={{ width: '240px' }}>Theo Dõi Số Lượng</th>
                   <th>Thời Gian Hiệu Lực</th>
-                  <th style={{ width: '150px', textAlign: 'center' }}>Trạng Thái</th>
-                  <th style={{ width: '180px', textAlign: 'center' }}>Hành Động</th>
+                  <th style={{ width: '130px', textAlign: 'center' }}>Trạng Thái</th>
+                  <th style={{ width: '160px', textAlign: 'center' }}>Hành Động</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,16 +310,41 @@ const QuanLyKhuyenMai = () => {
                 ) : (
                   promotions.map((item) => {
                     const hetHan = new Date(item.end_date) < new Date();
+                    const laMaThuThap = item.promotion_type === 'collectible';
+
                     return (
                       <tr key={item._id}>
                         <td>
-                          <span className="qlkm-badge-code">{item.code}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="qlkm-badge-code">{item.code}</span>
+                            {/* 🌟 ĐÃ THÊM: Huy hiệu trực quan phân biệt hình thức mã */}
+                            {laMaThuThap ? (
+                              <span style={{ fontSize: '11px', padding: '2px 6px', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontWeight: '500' }}>📥 Thu thập</span>
+                            ) : (
+                              <span style={{ fontSize: '11px', padding: '2px 6px', backgroundColor: '#f0fdf4', color: '#15803d', borderRadius: '4px', fontWeight: '500' }}>🌐 Công khai</span>
+                            )}
+                          </div>
                           <div className="qlkm-text-desc">{item.description || <em style={{ color: '#94a3b8' }}>Chưa có mô tả</em>}</div>
                         </td>
                         <td className="qlkm-text-price">-{item.discount_value.toLocaleString()}đ</td>
+                        
+                        {/* 🌟 CỘT THEO DÕI SỐ LƯỢNG: Tối ưu logic tách biệt cách hiển thị theo loại mã */}
                         <td>
-                          <span className="qlkm-text-count">{item.used_count}</span> / {item.usage_limit === null ? "∞" : item.usage_limit}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px' }}>
+                            {laMaThuThap && (
+                              <div>
+                                <span style={{ color: '#2563eb', fontWeight: '500' }}>📥 Khách đã nhận:</span>{' '}
+                                <strong>{item.claimed_count || 0}</strong> / {item.usage_limit === null ? "∞" : item.usage_limit}
+                              </div>
+                            )}
+                            <div>
+                              <span style={{ color: '#16a34a', fontWeight: '500' }}>🛒 Thực tế đã dùng:</span>{' '}
+                              <strong>{item.used_count || 0}</strong>
+                              {!laMaThuThap && item.usage_limit !== null ? ` / ${item.usage_limit}` : ''}
+                            </div>
+                          </div>
                         </td>
+
                         <td>
                           <div className="qlkm-date-block">
                             <div className="qlkm-date-item"><Calendar size={13}/> Từ: {formatNgay(item.start_date)}</div>
@@ -307,7 +374,7 @@ const QuanLyKhuyenMai = () => {
         )}
       </div>
 
-      {/* 🖼️ MODAL XÁC NHẬN XÓA TỰ CHẾ ĐỒNG BỘ */}
+      {/* MODAL XÁC NHẬN XÓA */}
       {moXoaModal && (
         <div className="qlkm-modal-overlay">
           <div className="qlkm-modal-box-custom qlkm-delete-box">

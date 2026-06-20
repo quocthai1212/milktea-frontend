@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Loader2, AlertTriangle, CheckCircle, Trash2, ListPlus, Sliders, Layers } from 'lucide-react';
+import { Plus, Loader2, AlertTriangle, CheckCircle, Trash2, ListPlus, Sliders, Layers, Image, X } from 'lucide-react';
 import '../css/quantri/QuanLySanPham.css'; 
 
 const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
@@ -14,13 +14,17 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     product_name: '', 
     base_price: '', 
     category: categoryId, 
-    image: '', 
     description: '', 
     is_active: true,
     toppings: [],
     sizes: []
   });
-  
+
+  const [avatarFile, setAvatarFile] = useState(null); 
+  const [avatarCu, setAvatarCu] = useState(''); // Lưu URL avatar cũ khi sửa
+  const [imagesFiles, setImagesFiles] = useState([]); // Mảng lưu các file ảnh phụ MỚI chọn thêm
+  const [danhSachAnhCu, setDanhSachAnhCu] = useState([]); // Mảng lưu các URL ảnh phụ CŨ từ backend
+
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -31,8 +35,28 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
 
   useEffect(() => {
     taiDanhSach();
-    setFormData(prev => ({ ...prev, category: categoryId, toppings: [], sizes: [] }));
+    resetForm();
   }, [categoryId]);
+
+  const resetForm = () => {
+    setFormData({
+      product_name: '',
+      base_price: '',
+      category: categoryId,
+      description: '',
+      is_active: true,
+      toppings: [],
+      sizes: []
+    });
+    setAvatarFile(null);
+    setAvatarCu('');
+    setImagesFiles([]);
+    setDanhSachAnhCu([]);
+    const avatarInput = document.getElementById('avatar-input');
+    const imagesInput = document.getElementById('images-input');
+    if (avatarInput) avatarInput.value = '';
+    if (imagesInput) imagesInput.value = '';
+  };
 
   const taiDanhSach = async () => {
     setLoading(true);
@@ -83,6 +107,26 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
+  const handleImagesChange = (e) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      // Tính tổng số lượng ảnh gồm cả ảnh phụ cũ còn lại và ảnh mới chọn
+      const tongSoAnh = danhSachAnhCu.length + imagesFiles.length + newFiles.length;
+
+      if (tongSoAnh > 10) {
+        showToast('Tổng số lượng ảnh phụ (cũ + mới) không được vượt quá 10 ảnh!', 'error');
+        // Chỉ lấy thêm vừa đủ để đạt tối đa 10 ảnh
+        const soLuongDuocThem = 10 - (danhSachAnhCu.length + imagesFiles.length);
+        if (soLuongDuocThem > 0) {
+          setImagesFiles([...imagesFiles, ...newFiles.slice(0, soLuongDuocThem)]);
+        }
+      } else {
+        setImagesFiles([...imagesFiles, ...newFiles]);
+      }
+      e.target.value = '';
+    }
+  };
+
   const handleAddToppingRow = () => {
     setFormData({
       ...formData,
@@ -131,23 +175,54 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
+
+    if (!formData.product_name || formData.product_name.trim() === "") {
+      showToast('Tên sản phẩm không được phép chỉ chứa khoảng trắng!', 'error');
+      return;
+    }
+
+    if (Number(formData.base_price) <= 0) {
+      showToast('Giá bán gốc của món ăn phải lớn hơn 0đ!', 'error');
+      return;
+    }
+
     const url = dangSuaId ? `${API_URL}/api/quantri/qt_sanpham/update/${dangSuaId}` : `${API_URL}/api/quantri/qt_sanpham/add`;
     const method = dangSuaId ? 'PUT' : 'POST';
 
     const toppingsChuanHoa = formData.toppings.map(t => ({ ...t, price: Number(t.price) || 0 }));
     const sizesChuanHoa = formData.sizes.map(s => ({ ...s, extra_price: Number(s.extra_price) || 0 }));
 
+    const dataToSend = new FormData();
+    dataToSend.append('category', categoryId);
+    dataToSend.append('product_name', formData.product_name);
+    dataToSend.append('base_price', formData.base_price);
+    dataToSend.append('description', formData.description);
+    dataToSend.append('is_active', formData.is_active);
+    
+    dataToSend.append('toppings', JSON.stringify(toppingsChuanHoa));
+    dataToSend.append('sizes', JSON.stringify(sizesChuanHoa));
+
+    // Gửi danh sách các ảnh phụ cũ còn giữ lại lên để backend cập nhật lại mảng dữ liệu cũ
+    dataToSend.append('remain_images', JSON.stringify(danhSachAnhCu));
+
+    if (avatarFile) {
+      dataToSend.append('avatar', avatarFile);
+    }
+    
+    if (imagesFiles && imagesFiles.length > 0) {
+      for (let i = 0; i < imagesFiles.length; i++) {
+        dataToSend.append('images', imagesFiles[i]);
+      }
+    }
+
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, toppings: toppingsChuanHoa, sizes: sizesChuanHoa, category: categoryId })
-      });
+      const res = await fetch(url, { method, body: dataToSend });
       const data = await res.json();
       if (data.success) {
         showToast(data.message || 'Lưu thông tin món thành công!', 'success');
         setHienForm(false);
         setDangSuaId(null);
+        resetForm();
         taiDanhSach();
       } else {
         showToast(data.message || 'Có lỗi xảy ra!', 'error');
@@ -198,7 +273,7 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
         </div>
         <button className="qlsp-btn-add-new" onClick={() => { 
           setDangSuaId(null); 
-          setFormData({ product_name: '', base_price: '', category: categoryId, image: '', description: '', is_active: true, toppings: [], sizes: [] }); 
+          resetForm();
           setHienForm(true); 
         }}>
           <Plus size={16} /> Thêm món mới
@@ -211,160 +286,116 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
             <span className="qlsp-close-modal-x" onClick={() => setHienForm(false)}>&times;</span>
             <h3 className="qlsp-modal-form-title">{dangSuaId ? '✏️ CHỈNH SỬA SẢN PHẨM' : '➕ THÊM SẢN PHẨM MỚI'}</h3>
             
-            {/* 🛠️ BỔ SUNG: Chặn tính năng autocomplete từ phía Form */}
             <form onSubmit={handleSaveProduct} autoComplete="off">
-              
-              {/* 🛠️ THAY ĐỔI: Bọc các thẻ input vào lớp bọc ảo .auth-input-wrap */}
               <div className="qlsp-form-group">
                 <label className="qlsp-form-label">Tên sản phẩm *</label>
                 <div className="auth-input-wrap">
-                  <input type="text" name="sp_txt_title" value={formData.product_name} onChange={(e) => setFormData({...formData, product_name: e.target.value})} required className="qlsp-input" />
+                  <input type="text" name="product_name" value={formData.product_name} onChange={handleInputChange} required className="qlsp-input" />
                 </div>
               </div>
 
               <div className="qlsp-form-group">
                 <label className="qlsp-form-label">Giá bán gốc (đ) *</label>
                 <div className="auth-input-wrap">
-                  <input type="number" name="sp_num_baseprice" value={formData.base_price} onChange={(e) => setFormData({...formData, base_price: e.target.value})} required className="qlsp-input" />
+                  <input type="number" name="base_price" value={formData.base_price} onChange={handleInputChange} step="500" required className="qlsp-input" />
                 </div>
               </div>
 
-              <div className="qlsp-form-group">
-                <label className="qlsp-form-label">Đường dẫn ảnh (URL)</label>
-                <div className="auth-input-wrap">
-                  <input type="text" name="sp_txt_imgurl" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} className="qlsp-input" />
+              {/* 📸 KHU VỰC HIỂN THỊ ẢNH CŨ VÀ ẢNH MỚI TRONG FORM */}
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '15px' }}>
+                
+                {/* A. Ô Tải và hiển thị ảnh đại diện */}
+                <div className="qlsp-form-group" style={{ flex: 1 }}>
+                  <label className="qlsp-form-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Image size={15} /> Ảnh đại diện (Avatar) {!dangSuaId && '*'}
+                  </label>
+                  <input type="file" id="avatar-input" accept="image/*" onChange={(e) => setAvatarFile(e.target.files[0] || null)} required={!dangSuaId} style={{ fontSize: '13px', width: '100%' }} />
+                  
+                  {/* Nếu chọn file mới thì xem trước file mới, ngược lại nếu đang sửa thì hiện ảnh cũ */}
+                  {avatarFile ? (
+                    <div style={{ marginTop: '10px', position: 'relative', width: '90px', height: '90px', borderRadius: '8px', overflow: 'hidden', border: '1px dashed #cbd5e1' }}>
+                      <img src={URL.createObjectURL(avatarFile)} alt="Avatar mới" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button type="button" onClick={() => { setAvatarFile(null); document.getElementById('avatar-input').value = ''; }} style={{ position: 'absolute', top: '2px', right: '2px', padding: '2px', background: 'rgba(239, 68, 68, 0.9)', color: '#fff', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={12} /></button>
+                    </div>
+                  ) : avatarCu ? (
+                    <div style={{ marginTop: '10px', width: '90px', height: '90px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                      <img src={`${API_URL}/${avatarCu}`} alt="Avatar cũ hiện tại" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* B. Ô Tải album ảnh phụ (Hiện tổng số ảnh cũ + mới) */}
+                <div className="qlsp-form-group" style={{ flex: 1 }}>
+                  <label className="qlsp-form-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Image size={15} /> Album ảnh phụ ({danhSachAnhCu.length + imagesFiles.length}/10)
+                  </label>
+                  <input type="file" id="images-input" accept="image/*" multiple onChange={handleImagesChange} style={{ fontSize: '13px', width: '100%' }} />
+                  
+                  {/* Hiển thị vùng preview tích hợp cả cũ và mới */}
+                  {((danhSachAnhCu && danhSachAnhCu.length > 0) || (imagesFiles && imagesFiles.length > 0)) && (
+                    <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '8px', border: '1px solid #f1f5f9', padding: '8px', borderRadius: '6px', backgroundColor: '#fafafa' }}>
+                      
+                      {/* 1. Đổ danh sách các ảnh CŨ đã có từ trước */}
+                      {danhSachAnhCu.map((imgUrl, index) => (
+                        <div key={`cu-${index}`} style={{ position: 'relative', width: '55px', height: '55px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #0284c7' }}>
+                          <img src={`${API_URL}/${imgUrl}`} alt="Cũ" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#0284c7', color: '#fff', fontSize: '8px', textAlignment: 'center', padding: '1px 0', display: 'block', textAlign: 'center' }}>Ảnh cũ</span>
+                          <button type="button" onClick={() => setDanhSachAnhCu(danhSachAnhCu.filter((_, i) => i !== index))} style={{ position: 'absolute', top: '1px', right: '1px', padding: '2px', background: 'rgba(220, 38, 38, 0.9)', color: '#fff', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '14px', height: '14px' }}><X size={10} /></button>
+                        </div>
+                      ))}
+
+                      {/* 2. Đổ danh sách các file ảnh MỚI nhặt thêm vào */}
+                      {imagesFiles.map((file, index) => (
+                        <div key={`moi-${index}`} style={{ position: 'relative', width: '55px', height: '55px', borderRadius: '6px', overflow: 'hidden', border: '1px dashed #22c55e' }}>
+                          <img src={URL.createObjectURL(file)} alt="Mới" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button type="button" onClick={() => setImagesFiles(imagesFiles.filter((_, i) => i !== index))} style={{ position: 'absolute', top: '1px', right: '1px', padding: '2px', background: 'rgba(220, 38, 38, 0.85)', color: '#fff', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '14px', height: '14px' }}><X size={10} /></button>
+                        </div>
+                      ))}
+
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="qlsp-form-group">
                 <label className="qlsp-form-label">Mô tả món ăn</label>
                 <div className="auth-input-wrap">
-                  <input type="text" name="sp_txt_desc" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="qlsp-input" />
+                  <input type="text" name="description" value={formData.description} onChange={handleInputChange} className="qlsp-input" />
                 </div>
               </div>
 
-              {/* ================= 📐 KHU VỰC 1: CẤU HÌNH KÍCH THƯỚC LY (SIZES) ================= */}
+              {/* SIZES */}
               <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <label className="qlsp-form-label" style={{ fontWeight: 'bold', color: '#166534', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Layers size={16} /> Kích thước ly (Sizes) áp dụng:
-                  </label>
-                  <button 
-                    type="button" 
-                    onClick={handleAddSizeRow}
-                    style={{ padding: '4px 10px', fontSize: '12px', backgroundColor: '#22c55e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
-                  >
-                    + Thêm dòng Size
-                  </button>
+                  <label className="qlsp-form-label" style={{ fontWeight: 'bold', color: '#166534', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}><Layers size={16} /> Kích thước ly (Sizes):</label>
+                  <button type="button" onClick={handleAddSizeRow} style={{ padding: '4px 10px', fontSize: '12px', backgroundColor: '#22c55e', color: '#fff', border: 'none', borderRadius: '4px' }}>+ Thêm dòng Size</button>
                 </div>
-
-                {formData.sizes.length === 0 ? (
-                  <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>Mặc định ly thường cố định (Không phân size).</p>
-                ) : (
+                {formData.sizes.length === 0 ? <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' }}>Mặc định ly thường.</p> : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {formData.sizes.map((sz, idx) => (
                       <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        <div className="auth-input-wrap" style={{ flex: 2 }}>
-                          <input 
-                            type="text" 
-                            name={`sz_name_${idx}`}
-                            placeholder="Tên Size (VD: M, L...)" 
-                            value={sz.size_name} 
-                            onChange={(e) => handleSizeInputChange(idx, 'size_name', e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div className="auth-input-wrap" style={{ flex: 1 }}>
-                          <input 
-                            type="number" 
-                            name={`sz_price_${idx}`}
-                            placeholder="Giá thêm (đ)" 
-                            value={sz.extra_price} 
-                            onChange={(e) => handleSizeInputChange(idx, 'extra_price', e.target.value)}
-                            required
-                          />
-                        </div>
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveSizeRow(idx)}
-                          style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '14px', cursor: 'pointer', height: '48px', display: 'flex', alignItems: 'center' }}
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div className="auth-input-wrap" style={{ flex: 2 }}><input type="text" placeholder="Tên Size" value={sz.size_name} onChange={(e) => handleSizeInputChange(idx, 'size_name', e.target.value)} required /></div>
+                        <div className="auth-input-wrap" style={{ flex: 1 }}><input type="number" placeholder="Giá thêm" value={sz.extra_price} onChange={(e) => handleSizeInputChange(idx, 'extra_price', e.target.value)} required /></div>
+                        <button type="button" onClick={() => handleRemoveSizeRow(idx)} style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '14px', height: '48px' }}><Trash2 size={14} /></button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* ================= 🍧 KHU VỰC 2: CẤU HÌNH TOPPINGS ĐI KÈM ================= */}
+              {/* TOPPINGS */}
               <div style={{ backgroundColor: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }}>
-                {toppingGoiYList.length > 0 && (
-                  <div style={{ marginBottom: '12px', borderBottom: '1px dashed #cbd5e1', paddingBottom: '10px' }}>
-                    <label className="qlsp-form-label" style={{ fontWeight: '600', color: '#475569', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <ListPlus size={14} /> Chọn nhanh Topping đã có của quán:
-                    </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
-                      {toppingGoiYList.map((tp, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => handleChonToppingCoSan(tp)}
-                          style={{ padding: '4px 8px', fontSize: '11px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'all 0.2s' }}
-                        >
-                          {tp.topping_name} (+{tp.price}đ)
-                        </button>
-                      ))}
-                  </div>
-                </div>
-                )}
-
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <label className="qlsp-form-label" style={{ fontWeight: 'bold', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sliders size={15} /> Topping áp dụng cho món này:
-                  </label>
-                  <button 
-                    type="button" 
-                    onClick={handleAddToppingRow}
-                    style={{ padding: '4px 10px', fontSize: '12px', backgroundColor: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
-                  >
-                    + Tự gõ mới Topping
-                  </button>
+                  <label className="qlsp-form-label" style={{ fontWeight: 'bold', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}><Sliders size={15} /> Topping áp dụng:</label>
+                  <button type="button" onClick={handleAddToppingRow} style={{ padding: '4px 10px', fontSize: '12px', backgroundColor: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px' }}>+ Tự gõ Topping</button>
                 </div>
-
-                {formData.toppings.length === 0 ? (
-                  <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>Món này chưa áp dụng topping nào.</p>
-                ) : (
+                {formData.toppings.length === 0 ? <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' }}>Không áp dụng topping.</p> : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {formData.toppings.map((tp, idx) => (
-                      <div key={tp.topping_id || idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        <div className="auth-input-wrap" style={{ flex: 2 }}>
-                          <input 
-                            type="text" 
-                            name={`tp_name_${idx}`}
-                            placeholder="Tên topping (VD: Trân châu...)" 
-                            value={tp.topping_name} 
-                            onChange={(e) => handleToppingInputChange(idx, 'topping_name', e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div className="auth-input-wrap" style={{ flex: 1 }}>
-                          <input 
-                            type="number" 
-                            name={`tp_price_${idx}`}
-                            placeholder="Giá (đ)" 
-                            value={tp.price} 
-                            onChange={(e) => handleToppingInputChange(idx, 'price', e.target.value)}
-                            required
-                          />
-                        </div>
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveToppingRow(idx)}
-                          style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '14px', cursor: 'pointer', height: '48px', display: 'flex', alignItems: 'center' }}
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                      <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <div className="auth-input-wrap" style={{ flex: 2 }}><input type="text" placeholder="Tên topping" value={tp.topping_name} onChange={(e) => handleToppingInputChange(idx, 'topping_name', e.target.value)} required /></div>
+                        <div className="auth-input-wrap" style={{ flex: 1 }}><input type="number" placeholder="Giá" value={tp.price} onChange={(e) => handleToppingInputChange(idx, 'price', e.target.value)} required /></div>
+                        <button type="button" onClick={() => handleRemoveToppingRow(idx)} style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '14px', height: '48px' }}><Trash2 size={14} /></button>
                       </div>
                     ))}
                   </div>
@@ -373,7 +404,7 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
 
               <div className="qlsp-modal-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '15px' }}>
                 <input type="checkbox" id="is_active_sp" name="is_active" checked={formData.is_active} onChange={handleInputChange} />
-                <label htmlFor="is_active_sp" style={{ fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>Mở bán công khai</label>
+                <label htmlFor="is_active_sp" style={{ fontSize: '13px', cursor: 'pointer' }}>Mở bán công khai</label>
               </div>
               <div className="qlsp-modal-actions">
                 <button type="button" onClick={() => setHienForm(false)} className="qlsp-btn-cancel">Hủy</button>
@@ -384,7 +415,7 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
         </div>
       )}
 
-      {/* DANH SÁCH BẢNG HIỂN THỊ DỮ LIỆU */}
+      {/* BẢNG HIỂN THỊ DỮ LIỆU */}
       <div className="qlsp-table-card">
         {loading ? (
           <div style={{ textAlign: 'center', padding: '20px' }}><Loader2 className="animate-spin inline" /> Đang đồng bộ món...</div>
@@ -393,7 +424,8 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
             <table className="qlsp-table">
               <thead>
                 <tr>
-                  <th style={{ width: '70px', textAlign: 'center' }}>Ảnh</th>
+                  <th style={{ width: '80px', textAlign: 'center' }}>Ảnh chính</th>
+                  <th style={{ width: '150px', textAlign: 'left' }}>Ảnh phụ (Album)</th>
                   <th>Tên Nước Uống / Món Ăn</th>
                   <th>Danh Mục</th>
                   <th>Giá Gốc</th>
@@ -406,14 +438,39 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
               <tbody>
                 {danhSachSPDaLoc.length === 0 ? (
                   <tr>
-                    <td colSpan="8" style={{ padding: '30px', color: '#94a3b8', textAlign: 'center' }}>
+                    <td colSpan="9" style={{ padding: '30px', color: '#94a3b8', textAlign: 'center' }}>
                       <em>Nhóm danh mục này chưa có sản phẩm nào. Hãy bấm thêm món mới!</em>
                     </td>
                   </tr>
                 ) : (
                   danhSachSPDaLoc.map(sp => (
                     <tr key={sp._id}>
-                      <td style={{ textAlign: 'center' }}><img src={sp.image || 'https://placehold.co/44'} className="qlsp-img-thumb" alt="" /></td>
+                      <td style={{ textAlign: 'center' }}>
+                        <img 
+                          src={sp.avatar ? `${API_URL}/${sp.avatar}` : 'https://placehold.co/44'} 
+                          className="qlsp-img-thumb" 
+                          alt="" 
+                          style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px' }}
+                          onError={(e) => { e.target.src = 'https://placehold.co/44'; }}
+                        />
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {sp.images && sp.images.length > 0 ? (
+                            sp.images.map((imgUrl, index) => (
+                              <img 
+                                key={index}
+                                src={`${API_URL}/${imgUrl}`}
+                                alt=""
+                                style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e2e8f0' }}
+                                onError={(e) => { e.target.src = 'https://placehold.co/30'; }}
+                              />
+                            ))
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>Không có</span>
+                          )}
+                        </div>
+                      </td>
                       <td><strong>{sp.product_name}</strong></td>
                       <td><span className="qlsp-category-badge">{layTenDanhMucTheoId(sp.category)}</span></td>
                       <td className="qlsp-price-color">{sp.base_price?.toLocaleString()}đ</td>
@@ -447,20 +504,29 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                         <span className={`qlsp-status ${sp.is_active ? 'active' : 'hidden-status'}`}>{sp.is_active ? 'Mở bán' : 'Ẩn'}</span>
                       </td>
                       <td style={{ textAlign: 'center' }}>
+                        
+                        {/* 🌟 NÚT SỬA ĐÃ ĐƯỢC THÊM ĐỔ DỮ LIỆU ẢNH CŨ */}
                         <button onClick={() => {
                           setDangSuaId(sp._id);
                           setFormData({ 
                             product_name: sp.product_name, 
                             base_price: sp.base_price, 
                             category: categoryId, 
-                            image: sp.image || '', 
                             description: sp.description || '', 
                             is_active: sp.is_active,
                             toppings: sp.toppings || [],
                             sizes: sp.sizes || []
                           });
+                          
+                          // Đổ dữ liệu ảnh cũ vào state lưu trữ riêng để xem trước
+                          setAvatarCu(sp.avatar || '');
+                          setDanhSachAnhCu(sp.images || []); 
+                          
+                          setAvatarFile(null); 
+                          setImagesFiles([]);
                           setHienForm(true);
                         }} className="qlsp-btn-edit" style={{ marginRight: '6px' }}>Sửa</button>
+
                         <button onClick={() => {
                           setSpCanXoa({ id: sp._id, name: sp.product_name });
                           setMoXoaModal(true);
@@ -475,14 +541,15 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
         )}
       </div>
 
+      {/* MODAL XÓA */}
       {moXoaModal && (
         <div className="qlsp-modal-overlay">
           <div className="qlsp-modal-box-custom qlsp-delete-box" style={{ maxWidth: '400px' }}>
             <div style={{ display: 'flex', gap: '14px' }}>
-              <div className="qlsp-delete-icon-wrapper" style={{ padding: '8px', background: '#fee2e2', borderRadius: '50%' }}><AlertTriangle size={22} color="#ef4444" /></div>
+              <div style={{ padding: '8px', background: '#fee2e2', borderRadius: '50%' }}><AlertTriangle size={22} color="#ef4444" /></div>
               <div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700' }}>Xác nhận xóa món</h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Bạn có chắc muốn gỡ bỏ hoàn toàn món <strong style={{ color: '#ef4444' }}>"{spCanXoa?.name}"</strong> khỏi thực đơn?</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Bạn có chắc muốn gỡ bỏ hoàn toàn món <strong style={{ color: '#ef4444' }}>"{spCanXoa?.name}"</strong>?</p>
               </div>
             </div>
             <div className="qlsp-modal-actions" style={{ marginTop: '20px' }}>

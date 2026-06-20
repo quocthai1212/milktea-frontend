@@ -4,11 +4,11 @@ import QuanLyNhanVien from './QuanLyNhanVien';
 import QuanLyThongke from './QuanLyThongKe';
 import QuanLyDanhmuc from './QuanLyDanhMucSanPham';
 import QuanLyKhuyenMai from './QuanLyKhuyenMai';
-// 🎯 THÊM SỰ KIỆN: Import component Quản lý Shipper đã sửa lỗi dấu chấm thành công
-import QuanLyShipper from './QuanLyShipper.jsx'; 
-
-// 🆕 THÊM SỰ KIỆN: Import component Quản lý Đơn hàng
 import QuanLyDonHang from './QuanLyDonHang.jsx';
+import QuanLyKhachHang from './QuanLyKhachHang.jsx';
+import QuanLyBinhLuan from './QuanLyBinhLuan';
+import QuanLyChiNhanh from './QuanLyChiNhanh';
+
 
 import '../css/quantri/AdminDashboard.css'; 
 
@@ -80,12 +80,11 @@ export default function AdminDashboard() {
             👥 Quản lý nhân viên
           </li>
 
-          {/* 🎯 THÊM SỰ KIỆN: Nút chuyển sang Tab Quản lý Tài xế / Shipper */}
           <li 
-            onClick={() => handleTabChange('shipper')} 
-            className={`admin-menu-item ${currentTab === 'shipper' ? 'active' : ''}`}
+            onClick={() => handleTabChange('khachhang')} 
+            className={`admin-menu-item ${currentTab === 'khachhang' ? 'active' : ''}`}
           >
-            🏍️ Quản lý tài xế (Shipper)
+            🏍️ Quản lý khách hàng
           </li>
 
           <li 
@@ -99,6 +98,19 @@ export default function AdminDashboard() {
             className={`admin-menu-item ${currentTab === 'khuyenmai' ? 'active' : ''}`}
           >
             🏷️ Quản lý khuyến mãi
+          </li>
+          
+          <li 
+            onClick={() => handleTabChange('binhluan')} 
+            className={`admin-menu-item ${currentTab === 'binhluan' ? 'active' : ''}`}
+          >
+            💬 Quản lý Bình Luận
+          </li>
+          <li 
+            onClick={() => handleTabChange('chinhanh')} 
+            className={`admin-menu-item ${currentTab === 'chinhanh' ? 'active' : ''}`}
+          >
+           🏢 Quản lý chi nhánh
           </li>
           <li 
             onClick={() => handleTabChange('thongke')} 
@@ -131,10 +143,14 @@ export default function AdminDashboard() {
           {currentTab === 'nhanvien' && <QuanLyNhanVien />}
           
           {/* 🎯 THÊM SỰ KIỆN: Render giao diện Quản lý Shipper khi bấm tab */}
-          {currentTab === 'shipper' && <QuanLyShipper />}
+          {currentTab === 'khachhang' && <QuanLyKhachHang />}
           
           {/* Tab này tự kiểm soát việc hiện Danh mục hay Sản phẩm bên trong nó */}
           {currentTab === 'danhmuc' && <QuanLyDanhmuc />}
+
+          {currentTab === 'binhluan' && <QuanLyBinhLuan />}
+
+          {currentTab === 'chinhanh' && <QuanLyChiNhanh />}
           
           {currentTab === 'thongke' && <QuanLyThongke />}
 

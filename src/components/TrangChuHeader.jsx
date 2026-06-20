@@ -4,6 +4,35 @@ import { Home, Tags, Info, MapPin, User, LogIn, LogOut, ShoppingCart, X, Minus, 
 import ModalDiaChiGiaoHang from '../khachhang/ModalDiaChiGiaoHang';
 import ModalDatHang from '../khachhang/ModalDatHang';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+// 🌟 HÀM XỬ LÝ ĐƯỜNG DẪN HÌNH ẢNH TỪ BACKEND ĐỂ HIỂN THỊ TRÊN GIỎ HÀNG
+export const getHinhAnhUrl = (urlHinh) => {
+  if (!urlHinh) return 'https://placehold.co/600x600?text=No+Image';
+  
+  if (/^(https?:|\/\/|data:)/i.test(urlHinh)) {
+    return urlHinh;
+  }
+
+  let cleanPath = urlHinh;
+  if (API_URL && cleanPath.includes(API_URL)) {
+    cleanPath = cleanPath.replace(API_URL, '');
+  }
+
+  const bieuThucTrungLap = /(\/uploads\/[^\/]+\/[^\/]+\/)(\1)/i;
+  cleanPath = cleanPath.replace(bieuThucTrungLap, '$1');
+
+  const bieuThucTrungLapNgan = /(\/uploads\/[^\/]+\/)(\1)/i;
+  cleanPath = cleanPath.replace(bieuThucTrungLapNgan, '$1');
+
+  if (!cleanPath.startsWith('/')) {
+    cleanPath = '/' + cleanPath;
+  }
+
+  const gocBackend = API_URL || 'http://localhost:5000';
+  return `${gocBackend}${cleanPath}`;
+};
+
 const docDeliveryAddress = () => {
   try {
     const raw = localStorage.getItem('delivery_address');
@@ -161,7 +190,6 @@ const TrangChuHeader = ({ activePage = 'home' }) => {
   };
 
   const khachHangId = nguoiDung?._id || nguoiDung?.id || null;
-
   const tongSoLuong = tinhTongSoLuongGio();
 
   return (
@@ -195,7 +223,12 @@ const TrangChuHeader = ({ activePage = 'home' }) => {
               <Link to="/" className={activePage === 'home' ? 'active' : ''}>
                 <Home size={16} /> Trang chủ
               </Link>
-              <a href={activePage === 'home' ? '#khuyen-mai' : '/#khuyen-mai'}><Tags size={16} /> Khuyến mãi</a>
+              <Link 
+                to="/khkhuyen-mai" 
+                className={activePage === 'promotions' ? 'active' : ''}
+              >
+                <Tags size={16} /> Khuyến mãi
+              </Link>
               <a href={activePage === 'home' ? '#ve-chung-toi' : '/#ve-chung-toi'}><Info size={16} /> Về chúng tôi</a>
             </div>
 
@@ -269,7 +302,8 @@ const TrangChuHeader = ({ activePage = 'home' }) => {
                         <ul className="tc-cart-list">
                           {gioHang.map((item) => (
                             <li key={item.id} className="tc-cart-item">
-                              <img src={item.image} alt={item.tenMon} className="tc-cart-item-img" />
+                              {/* 🌟 FIX LỖI: Bọc item.image vào hàm xử lý đường dẫn ảnh từ Backend */}
+                              <img src={getHinhAnhUrl(item.image)} alt={item.tenMon} className="tc-cart-item-img" />
                               <div className="tc-cart-item-info">
                                 <span className="tc-cart-item-name">{item.tenMon}</span>
                                 {item.toppings?.length > 0 && (

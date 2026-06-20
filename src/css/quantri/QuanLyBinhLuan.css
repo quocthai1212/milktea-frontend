@@ -1,0 +1,449 @@
+/* ==========================================================================
+   🎨 FILE: QuanLyBinhLuan.css
+   Giao diện quản lý bình luận & từ khóa cấm - Đồng bộ khung chuẩn hệ thống
+   ========================================================================== */
+
+   .qlbl-container {
+    width: 100%;
+    padding: 20px;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  
+  .qlbl-main-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 24px;
+  }
+  
+  /* ==========================================================================
+     🧱 PHÂN HỆ 1: KHU VỰC THIẾT LẬP TỪ KHÓA CẤM (BAD WORDS MANAGEMENT)
+     ========================================================================== */
+  .qlbl-badwords-section {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+  
+  .qlbl-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .qlbl-badwords-form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    max-width: 500px;
+  }
+  
+  .qlbl-badwords-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  
+  .qlbl-word-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    color: #334155;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #cbd5e1;
+  }
+  
+  .qlbl-btn-remove-tag {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+  
+  .qlbl-btn-remove-tag:hover {
+    color: #ef4444;
+  }
+  
+  /* ==========================================================================
+     📊 BẢNG DỮ LIỆU BÌNH LUẬN CỦA KHÁCH HÀNG (TABLE COMPONENT)
+     ========================================================================== */
+  .qlbl-table-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .qlbl-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .qlbl-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+    min-width: 800px;
+  }
+  
+  .qlbl-table th {
+    background-color: #1e293b;
+    color: #f8fafc;
+    padding: 14px 16px;
+    font-weight: 600;
+  }
+  
+  .qlbl-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: middle;
+  }
+  
+  .qlbl-table tr:hover {
+    background-color: #f8fafc;
+  }
+  
+  /* Thông tin khách + sản phẩm */
+  .qlbl-info-user {
+    font-weight: 700;
+    color: #0f172a;
+    display: block;
+  }
+  
+  .qlbl-info-product {
+    font-size: 12px;
+    color: #3b82f6;
+    font-weight: 600;
+    margin-top: 4px;
+    display: block;
+  }
+  
+  /* Khối nội dung comment */
+  .qlbl-stars {
+    color: #f59e0b;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  
+  .qlbl-comment-text {
+    font-size: 14px;
+    color: #475569;
+    max-width: 380px;
+    word-wrap: break-word;
+  }
+  
+  .qlbl-comment-empty {
+    font-style: italic;
+    color: #94a3b8;
+  }
+  
+  /* ==========================================================================
+     🏷️ HUY HIỆU TRẠNG THÁI (BADGES)
+     ========================================================================== */
+  .qlbl-badge {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+  }
+  
+  .qlbl-badge-user-locked { background: #cbd5e1; color: #475569; }
+  .qlbl-badge-approved { background: #d1fae5; color: #065f46; }
+  .qlbl-badge-hidden { background: #f1f5f9; color: #94a3b8; }
+  
+  /* ==========================================================================
+     🎛️ NÚT HÀNH ĐỘNG TRONG BẢNG
+     ========================================================================== */
+  .qlbl-actions-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  
+  .qlbl-btn-view { background: #e2e8f0; color: #1e293b; border: 1px solid #cbd5e1; }
+  .qlbl-btn-view:hover { background: #cbd5e1; }
+  
+  .qlbl-btn-lock { background: #f59e0b; color: white; border: none; }
+  .qlbl-btn-lock:hover { background: #d97706; }
+  
+  .qlbl-btn-locked-status { background: #e2e8f0; color: #94a3b8; border: none; cursor: not-allowed; }
+  
+  .qlbl-btn-delete { background: #ef4444; color: white; border: none; }
+  .qlbl-btn-delete:hover { background: #dc2626; }
+  
+  .qlbl-btn-view, .qlbl-btn-lock, .qlbl-btn-locked-status, .qlbl-btn-delete {
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  
+  /* ==========================================================================
+     🖼️ CỬA SỔ POP-UP (MODAL XEM CHI TIẾT / XÁC NHẬN)
+     ========================================================================== */
+  .qlbl-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+  }
+  
+  .qlbl-modal-box {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .qlbl-modal-box-alert {
+    max-width: 420px;
+  }
+  
+  .qlbl-modal-title {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 700;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+  }
+  
+  .qlbl-modal-title.detail { color: #2563eb; }
+  .qlbl-modal-title.danger { color: #ef4444; }
+  .qlbl-modal-title.warning { color: #f59e0b; }
+  
+  .qlbl-detail-quote {
+    background: #f8fafc;
+    padding: 14px;
+    border-radius: 8px;
+    border-left: 4px solid #cbd5e1;
+    margin: 16px 0;
+  }
+  
+  .qlbl-image-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  
+  .qlbl-attached-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+  }
+  
+  .qlbl-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  
+  .qlbl-btn-cancel { background: #cbd5e1; color: #334155; border: none; }
+  .qlbl-btn-cancel:hover { background: #94a3b8; }
+  
+  .qlbl-btn-confirm-danger { background: #ef4444; color: white; border: none; }
+  .qlbl-btn-confirm-danger:hover { background: #dc2626; }
+  
+  .qlbl-btn-confirm-warning { background: #f59e0b; color: white; border: none; }
+  .qlbl-btn-confirm-warning:hover { background: #d97706; }
+  
+  .qlbl-btn-cancel, .qlbl-btn-confirm-danger, .qlbl-btn-confirm-warning, .qlbl-btn-close {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .qlbl-btn-close { width: 100%; background: #64748b; color: white; border: none; }
+  .qlbl-btn-close:hover { background: #475569; }
+  
+  /* ==========================================================================
+     🔔 HỆ THỐNG TOAST THÔNG BÁO
+     ========================================================================== */
+  .qlbl-toast {
+    position: fixed; top: 20px; right: 20px; zIndex: 9999;
+    color: white; padding: 14px 24px; border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+    font-weight: 600; display: flex; alignItems: center; gap: 10px;
+    animation: slideInBL 0.3s ease-out;
+  }
+  .qlbl-toast.success { background: #10b981; }
+  .qlbl-toast.error { background: #ef4444; }
+  
+  .qlbl-toast-close { margin-left: 15px; cursor: pointer; font-size: 18px; }
+  
+  @keyframes slideInBL { 
+    from { transform: translateX(100%); opacity: 0; } 
+    to { transform: translateX(0); opacity: 1; } 
+  }
+
+  /* ==================================================
+   LAYOUT BIỂU ĐỒ CHART.JS CHO QUẢN LÝ BÌNH LUẬN CAO CẤP
+   ================================================== */
+.ai-dashboard-section {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+  margin-bottom: 25px;
+  border: 1px solid #eef2f6;
+}
+
+.ai-dashboard-title {
+  font-size: 18px;
+  color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.ai-dashboard-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+/* Container chứa 2 biểu đồ xếp song song */
+.charts-flex-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 25px;
+}
+
+/* Khung bọc từng biểu đồ riêng biệt */
+.chart-box-wrapper {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-box-title {
+  font-size: 14px;
+  color: #334155;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-weight: 600;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+/* Khống chế chiều cao cho canvas của Chart.js tránh bị tràn */
+.chart-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 240px; /* Độ cao lý tưởng để hiển thị biểu đồ sắc nét */
+}
+
+/* Các nhãn cảm xúc trong bảng */
+.ai-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+.tag-positive { background-color: #dcfce7; color: #15803d; }
+.tag-negative { background-color: #fee2e2; color: #b91c1c; }
+.tag-neutral  { background-color: #f1f5f9; color: #475569; }
+.tag-unknown  { background-color: #fef9c3; color: #a16207; }
+
+/* Hộp cảnh báo món bị chê */
+.ai-warning-box {
+  background-color: #fff7ed;
+  border: 1px dashed #f97316;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.ai-warning-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ea580c;
+  margin-bottom: 12px;
+}
+
+.ai-warning-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-warning-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #334155;
+  background: #ffffff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.ai-warning-index {
+  color: #f97316;
+  font-weight: 700;
+  margin-right: 12px;
+}
+
+.ai-warning-name {
+  flex-grow: 1;
+}
+
+.ai-warning-count {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}

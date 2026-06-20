@@ -224,6 +224,26 @@
   }
   .dh-info-grid h5 { margin: 0 0 8px 0; color: #475569; font-size: 14px; display: flex; align-items: center; gap: 4px; }
   .dh-info-grid p { margin: 4px 0; font-size: 13px; color: #334155; }
+  .dh-payment-success-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0 16px;
+    color: #14532d;
+  }
+  .dh-payment-success-box h5 {
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #15803d;
+    font-size: 14px;
+  }
+  .dh-payment-success-box p {
+    margin: 4px 0;
+    font-size: 13px;
+  }
   .dh-invoice-items-table {
     width: 100%;
     border-collapse: collapse;
@@ -286,3 +306,78 @@
   .text-small { font-size: 11px; }
   .dh-status-box { padding: 40px; text-align: center; color: #64748b; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;}
   .dh-spinner { width: 18px; height: 18px; border: 2px solid #cbd5e1; border-top-color: #4f46e5; border-radius: 50%; animation: spin 0.8s linear infinite;}
+/* Khối điều phối trong Modal */
+.dh-action-control-panel {
+  margin-top: 25px;
+  padding: 15px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b45309;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.control-group {
+  margin-bottom: 12px;
+}
+.control-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  display: block;
+  margin-bottom: 6px;
+}
+.shipper-select-flex, .cancel-input-flex {
+  display: flex;
+  gap: 10px;
+}
+.shipper-select-flex select, .cancel-input-flex input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+}
+.btn-assign-shipper {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0 15px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-assign-shipper:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+.action-buttons-flex {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+.btn-status-action {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+.btn-preparing { background-color: #059669; color: white; }
+.btn-completed { background-color: #10b981; color: white; }
+.btn-failed { background-color: #f59e0b; color: white; }
+.btn-cancelled { background-color: #dc2626; color: white; }
+
+/* 🌟 CỰC KỲ QUAN TRỌNG: Ẩn khối điều phối này đi khi nhấn lệnh in hóa đơn ra giấy */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
