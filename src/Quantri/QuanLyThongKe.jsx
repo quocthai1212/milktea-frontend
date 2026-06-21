@@ -898,7 +898,10 @@ const QuanLyThongKe = () => {
                           </td>
 
                           <td className="text-right text-bold">
-                            {(don.total_price || 0).toLocaleString('vi-VN')} đ
+                            {(tabHienTai === 'mathang' && don.target_item_subtotal !== undefined
+                              ? don.target_item_subtotal
+                              : (don.total_amount || don.total_price || 0)
+                            ).toLocaleString('vi-VN')} đ
                           </td>
                         </tr>
                       ))}
