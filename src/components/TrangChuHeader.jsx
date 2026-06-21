@@ -229,7 +229,7 @@ const TrangChuHeader = ({ activePage = 'home' }) => {
               >
                 <Tags size={16} /> Khuyến mãi
               </Link>
-              <a href={activePage === 'home' ? '#ve-chung-toi' : '/#ve-chung-toi'}><Info size={16} /> Về chúng tôi</a>
+             
             </div>
 
             <div className="tc-nav-actions">
