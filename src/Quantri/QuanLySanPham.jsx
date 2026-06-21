@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Loader2, AlertTriangle, CheckCircle, Trash2, ListPlus, Sliders, Layers, Image, X } from 'lucide-react';
+import { Plus, Loader2, AlertTriangle, CheckCircle, Trash2, Sliders, Layers, Image, X } from 'lucide-react';
 import '../css/quantri/QuanLySanPham.css'; 
 
 const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
@@ -79,6 +79,15 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     }
   };
 
+  // 🌟 HÀM BỔ TRỢ: Tự động phân loại link Cloudinary tuyệt đối hoặc link Local cũ để hiển thị chuẩn xác
+  const renderImage = (path, fallback = 'https://placehold.co/150') => {
+    if (!path) return fallback;
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path; // Nếu là link Cloudinary, giữ nguyên URL
+    }
+    return `${API_URL}/${path}`; // Nếu là link local cũ, giữ logic nối chuỗi API_URL
+  };
+
   const layToppingDaCoSan = () => {
     const tatCaToppings = [];
     const checkGiaTriTrung = new Set();
@@ -110,12 +119,10 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
   const handleImagesChange = (e) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      // Tính tổng số lượng ảnh gồm cả ảnh phụ cũ còn lại và ảnh mới chọn
       const tongSoAnh = danhSachAnhCu.length + imagesFiles.length + newFiles.length;
 
       if (tongSoAnh > 10) {
         showToast('Tổng số lượng ảnh phụ (cũ + mới) không được vượt quá 10 ảnh!', 'error');
-        // Chỉ lấy thêm vừa đủ để đạt tối đa 10 ảnh
         const soLuongDuocThem = 10 - (danhSachAnhCu.length + imagesFiles.length);
         if (soLuongDuocThem > 0) {
           setImagesFiles([...imagesFiles, ...newFiles.slice(0, soLuongDuocThem)]);
@@ -142,18 +149,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     const updated = [...formData.toppings];
     updated[idx][field] = field === 'price' ? (value === '' ? '' : Number(value)) : value;
     setFormData({ ...formData, toppings: updated });
-  };
-
-  const handleChonToppingCoSan = (tpGoiY) => {
-    const biTrung = formData.toppings.some(t => t.topping_name.trim().toLowerCase() === tpGoiY.topping_name.toLowerCase());
-    if (biTrung) {
-      showToast(`Topping "${tpGoiY.topping_name}" đã tồn tại trong danh sách!`, 'error');
-      return;
-    }
-    setFormData({
-      ...formData,
-      toppings: [...formData.toppings, { topping_id: `tp_${Date.now()}`, topping_name: tpGoiY.topping_name, price: tpGoiY.price }]
-    });
   };
 
   const handleAddSizeRow = () => {
@@ -201,8 +196,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
     
     dataToSend.append('toppings', JSON.stringify(toppingsChuanHoa));
     dataToSend.append('sizes', JSON.stringify(sizesChuanHoa));
-
-    // Gửi danh sách các ảnh phụ cũ còn giữ lại lên để backend cập nhật lại mảng dữ liệu cũ
     dataToSend.append('remain_images', JSON.stringify(danhSachAnhCu));
 
     if (avatarFile) {
@@ -301,7 +294,7 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                 </div>
               </div>
 
-              {/* 📸 KHU VỰC HIỂN THỊ ẢNH CŨ VÀ ẢNH MỚI TRONG FORM */}
+              {/* 📸 KHU VỰC HIỂN THỊ ẢNH TRONG FORM FORM */}
               <div style={{ display: 'flex', gap: '16px', marginBottom: '15px' }}>
                 
                 {/* A. Ô Tải và hiển thị ảnh đại diện */}
@@ -311,7 +304,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                   </label>
                   <input type="file" id="avatar-input" accept="image/*" onChange={(e) => setAvatarFile(e.target.files[0] || null)} required={!dangSuaId} style={{ fontSize: '13px', width: '100%' }} />
                   
-                  {/* Nếu chọn file mới thì xem trước file mới, ngược lại nếu đang sửa thì hiện ảnh cũ */}
                   {avatarFile ? (
                     <div style={{ marginTop: '10px', position: 'relative', width: '90px', height: '90px', borderRadius: '8px', overflow: 'hidden', border: '1px dashed #cbd5e1' }}>
                       <img src={URL.createObjectURL(avatarFile)} alt="Avatar mới" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -319,27 +311,28 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                     </div>
                   ) : avatarCu ? (
                     <div style={{ marginTop: '10px', width: '90px', height: '90px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
-                      <img src={`${API_URL}/${avatarCu}`} alt="Avatar cũ hiện tại" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      {/* 🌟 ĐÃ SỬA: Dùng hàm renderImage loại bỏ lỗi 404 lặp chuỗi */}
+                      <img src={renderImage(avatarCu)} alt="Avatar cũ hiện tại" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                   ) : null}
                 </div>
 
-                {/* B. Ô Tải album ảnh phụ (Hiện tổng số ảnh cũ + mới) */}
+                {/* B. Ô Tải album ảnh phụ */}
                 <div className="qlsp-form-group" style={{ flex: 1 }}>
                   <label className="qlsp-form-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Image size={15} /> Album ảnh phụ ({danhSachAnhCu.length + imagesFiles.length}/10)
                   </label>
                   <input type="file" id="images-input" accept="image/*" multiple onChange={handleImagesChange} style={{ fontSize: '13px', width: '100%' }} />
                   
-                  {/* Hiển thị vùng preview tích hợp cả cũ và mới */}
                   {((danhSachAnhCu && danhSachAnhCu.length > 0) || (imagesFiles && imagesFiles.length > 0)) && (
                     <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '8px', border: '1px solid #f1f5f9', padding: '8px', borderRadius: '6px', backgroundColor: '#fafafa' }}>
                       
                       {/* 1. Đổ danh sách các ảnh CŨ đã có từ trước */}
                       {danhSachAnhCu.map((imgUrl, index) => (
                         <div key={`cu-${index}`} style={{ position: 'relative', width: '55px', height: '55px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #0284c7' }}>
-                          <img src={`${API_URL}/${imgUrl}`} alt="Cũ" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#0284c7', color: '#fff', fontSize: '8px', textAlignment: 'center', padding: '1px 0', display: 'block', textAlign: 'center' }}>Ảnh cũ</span>
+                          {/* 🌟 ĐÃ SỬA: Dùng hàm renderImage loại bỏ lỗi 404 lặp chuỗi */}
+                          <img src={renderImage(imgUrl)} alt="Cũ" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#0284c7', color: '#fff', fontSize: '8px', display: 'block', textAlign: 'center', padding: '1px 0' }}>Ảnh cũ</span>
                           <button type="button" onClick={() => setDanhSachAnhCu(danhSachAnhCu.filter((_, i) => i !== index))} style={{ position: 'absolute', top: '1px', right: '1px', padding: '2px', background: 'rgba(220, 38, 38, 0.9)', color: '#fff', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '14px', height: '14px' }}><X size={10} /></button>
                         </div>
                       ))}
@@ -446,8 +439,9 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                   danhSachSPDaLoc.map(sp => (
                     <tr key={sp._id}>
                       <td style={{ textAlign: 'center' }}>
+                        {/* 🌟 ĐÃ SỬA: Render ảnh chính thông qua hàm lọc thông minh */}
                         <img 
-                          src={sp.avatar ? `${API_URL}/${sp.avatar}` : 'https://placehold.co/44'} 
+                          src={renderImage(sp.avatar, 'https://placehold.co/44')} 
                           className="qlsp-img-thumb" 
                           alt="" 
                           style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px' }}
@@ -458,9 +452,10 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {sp.images && sp.images.length > 0 ? (
                             sp.images.map((imgUrl, index) => (
+                              /* 🌟 ĐÃ SỬA: Render mảng ảnh album phụ bằng hàm lọc thông minh */
                               <img 
                                 key={index}
-                                src={`${API_URL}/${imgUrl}`}
+                                src={renderImage(imgUrl, 'https://placehold.co/30')}
                                 alt=""
                                 style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e2e8f0' }}
                                 onError={(e) => { e.target.src = 'https://placehold.co/30'; }}
@@ -504,8 +499,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                         <span className={`qlsp-status ${sp.is_active ? 'active' : 'hidden-status'}`}>{sp.is_active ? 'Mở bán' : 'Ẩn'}</span>
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        
-                        {/* 🌟 NÚT SỬA ĐÃ ĐƯỢC THÊM ĐỔ DỮ LIỆU ẢNH CŨ */}
                         <button onClick={() => {
                           setDangSuaId(sp._id);
                           setFormData({ 
@@ -518,7 +511,6 @@ const QuanLySanPham = ({ categoryId, categoryName, danhSachDM = [] }) => {
                             sizes: sp.sizes || []
                           });
                           
-                          // Đổ dữ liệu ảnh cũ vào state lưu trữ riêng để xem trước
                           setAvatarCu(sp.avatar || '');
                           setDanhSachAnhCu(sp.images || []); 
                           

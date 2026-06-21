@@ -26,8 +26,9 @@ export default function QuanLyNhanVien() {
     }, 4000);
   };
 
+  // 🚨 ĐÃ BỎ trường username khỏi formData ban đầu
   const [formData, setFormData] = useState({
-    username: '', full_name: '', email: '', phone: '', password: '',
+    full_name: '', email: '', phone: '', password: '',
     cccd: '', birthday: '', gender: 'Nam', role_id: 2,      
     base_salary: 25000, is_active: true, branch_id: ''
   });
@@ -73,7 +74,7 @@ export default function QuanLyNhanVien() {
 
   useEffect(() => {
     fetchNhanVien(); 
-    fetchChiNhanh();                                                             
+    fetchChiNhanh();                                                                             
   }, []);
 
   const xuLyMoForm = (mode, user = null) => {
@@ -81,7 +82,6 @@ export default function QuanLyNhanVien() {
     setSelectedUser(user);
     if (user) {
       setFormData({
-        username: user.username || '', 
         full_name: user.full_name || '',
         email: user.email || '',
         phone: user.phone || '',
@@ -96,7 +96,7 @@ export default function QuanLyNhanVien() {
       });
     } else {
       setFormData({ 
-        username: '', full_name: '', email: '', phone: '', password: '', 
+        full_name: '', email: '', phone: '', password: '', 
         cccd: '', birthday: '', gender: 'Nam', role_id: 2, base_salary: 25000, 
         is_active: true, branch_id: '' 
       });
@@ -109,16 +109,9 @@ export default function QuanLyNhanVien() {
     e.preventDefault();
 
     // 1. Kiểm tra các trường bắt buộc không được bỏ trống
-    if (!formData.username.trim()) return hienThongBao('Tên đăng nhập không được bỏ trống!', 'error');
     if (!formData.full_name.trim()) return hienThongBao('Họ và tên không được bỏ trống!', 'error');
     if (!formData.email.trim()) return hienThongBao('Email không được bỏ trống!', 'error');
     if (!formData.phone.trim()) return hienThongBao('Số điện thoại không được bỏ trống!', 'error');
-
-    // 2. Validate Username
-    const regexUsername = /^[a-z0-9_]{4,20}$/;
-    if (!regexUsername.test(formData.username.trim())) {
-      return hienThongBao('Username từ 4-20 ký tự, chỉ gồm chữ thường, số và dấu gạch dưới (_), không khoảng trắng!', 'error');
-    }
 
     // 3. Validate Họ Tên
     const regexFullName = /^[\p{L}\s]+$/u;
@@ -138,13 +131,17 @@ export default function QuanLyNhanVien() {
       return hienThongBao('Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng đầu số VN như 03, 05, 07, 08, 09)!', 'error');
     }
 
-    // 🛠️ 6. VALIDATE ĐỘ TUỔI (Từ 18 tuổi trở lên đến DƯỚI 50 tuổi)
-    if (!formData.birthday) {
+    // 🛠️ 6. VALIDATE ĐỘ TUỔI AN TOÀN (Từ 18 tuổi trở lên đến DƯỚI 50 tuổi)
+    if (!formData.birthday || formData.birthday.trim() === "") {
       return hienThongBao('Vui lòng chọn ngày tháng năm sinh!', 'error');
     }
     
     const ngayHienTai = new Date();
     const ngaySinhUser = new Date(formData.birthday);
+    
+    if (isNaN(ngaySinhUser.getTime())) {
+      return hienThongBao('Ngày sinh không đúng định dạng hợp lệ!', 'error');
+    }
     
     // Tính số tuổi tạm thời dựa trên năm
     let tinhTuoi = ngayHienTai.getFullYear() - ngaySinhUser.getFullYear();
@@ -198,7 +195,6 @@ export default function QuanLyNhanVien() {
 
       const payload = {
         ...formData,
-        username: formData.username.trim(),
         full_name: formData.full_name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
@@ -374,7 +370,7 @@ export default function QuanLyNhanVien() {
               <div>
                 <h3 style={{ margin: '0 0 15px 0', color: '#2563eb', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>📋 Hồ Sơ Lý Lịch Chi Tiết</h3>
                 <div className="qlnv-view-details-body" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                  <p><strong>Tên tài khoản:</strong> {selectedUser.username || 'Chưa thiết lập'}</p>
+                  {/* Đã xóa dòng hiển thị username ở đây */}
                   <p><strong>Họ tên:</strong> {selectedUser.full_name}</p>
                   <p><strong>Chức vụ:</strong> {hienThiChucVu(selectedUser.role_id)}</p>
                   <p><strong>Cơ sở trực thuộc:</strong> {selectedUser.branch_id?.branch_name ? `📍 ${selectedUser.branch_id.branch_name} (${selectedUser.branch_id.shop_address})` : '🚫 Chưa phân phối chi nhánh (Tự do)'}</p>
@@ -401,25 +397,11 @@ export default function QuanLyNhanVien() {
                 <h3 style={{ margin: '0 0 15px 0', color: '#059669', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>
                   {modalMode === 'add' ? '➕ Thêm Thành Viên Mới' : '✏️ Chỉnh Sửa Thông Tin'}
                 </h3>
-                
-                <div className="qlnv-form-group">
-                  <label className="qlnv-form-label">Tên đăng nhập (Username):</label>
-                  <div className="auth-input-wrap">
-                    <input 
-                      type="text" 
-                      required 
-                      disabled={modalMode === 'edit'} 
-                      placeholder="Ví dụ: nguyenvana"
-                      value={formData.username} 
-                      autoComplete="new-password"
-                      onChange={(e) => setFormData({...formData, username: e.target.value})} 
-                    />
-                  </div>
-                </div>
 
+                {/* Form Row đã được làm gọn sạch, không còn liên quan gì đến username */}
                 <div className="qlnv-form-row" style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
-                    <label className="qlnv-form-label">Họ tên:</label>
+                    <label className="qlnv-form-label">Họ tên nhân sự:</label>
                     <div className="auth-input-wrap">
                       <input 
                         type="text" 
@@ -474,7 +456,6 @@ export default function QuanLyNhanVien() {
 
                 <div className="qlnv-form-row" style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    {/* Yêu cầu tuổi hiển thị trực tiếp trên Label để người quản trị chú ý */}
                     <label className="qlnv-form-label">Ngày sinh (Yêu cầu từ 18 đến dưới 50 tuổi):</label>
                     <div className="auth-input-wrap">
                       <input 

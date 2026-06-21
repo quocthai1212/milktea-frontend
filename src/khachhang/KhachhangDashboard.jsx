@@ -48,6 +48,32 @@ const KhachhangDashboard = () => {
   const [dangGuiReview, setDangGuiReview] = useState(false);
 
   // =========================================================================
+// 🖼️ HÀM CHUẨN HÓA ĐƯỜNG DẪN HÌNH ẢNH TỪ CSDL (LOCAL & CLOUDINARY)
+// =========================================================================
+  const getHinhAnhUrl = (urlHinh) => {
+    if (!urlHinh) return 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
+    
+    let cleanPath = urlHinh.trim();
+
+    // 1. Nếu chứa link tuyệt đối (Cloudinary) thì trích xuất trả về luôn
+    if (cleanPath.includes('http://') || cleanPath.includes('https://')) {
+      const match = cleanPath.match(/https?:\/\/[^\s]+/i);
+      if (match) return match[0];
+    }
+
+    // 2. Xóa bớt API_URL lặp lại nếu CSDL lưu nhầm cấu trúc
+    if (API_URL && cleanPath.includes(API_URL)) {
+      cleanPath = cleanPath.replace(API_URL, '');
+    }
+
+    // 3. Đảm bảo có đúng một dấu gạch chéo ở đầu đường dẫn local
+    if (!cleanPath.startsWith('/')) {
+      cleanPath = '/' + cleanPath;
+    }
+
+    return `${API_URL}${cleanPath}`;
+  };
+  // =========================================================================
   // 🔥 ĐOẠN BỔ SUNG: TỰ ĐỘNG ĐÓNG ALERT / TOAST THÔNG BÁO SAU 3 GIÂY (Tăng nhẹ thời gian để kịp đọc lỗi dài)
   // =========================================================================
   useEffect(() => {
@@ -344,9 +370,7 @@ const KhachhangDashboard = () => {
 
           <div className="khdh-order-items-preview">
             {(don.items || []).map((item, index) => {
-              const hinhAnhUrl = item.product_image 
-                ? (item.product_image.startsWith('http') ? item.product_image : `${API_URL}${item.product_image}`)
-                : 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
+              const hinhAnhUrl = getHinhAnhUrl(item.product_image);
 
               return (
                 <div key={index} className="khdh-preview-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
@@ -635,23 +659,22 @@ const KhachhangDashboard = () => {
 
               <h3 className="khdh-modal-label">Danh sách món đã đặt</h3>
               <div className="khdh-modal-items-list-wrapper">
-                {(donChiTiet.items || []).map((item, i) => {
-                  const hinhAnhUrl = item.product_image 
-                    ? (item.product_image.startsWith('http') ? item.product_image : `${API_URL}${item.product_image}`)
-                    : 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
+              {(donChiTiet.items || []).map((item, i) => {
+                // Gọi hàm chuẩn hóa thông minh
+                const hinhAnhUrl = getHinhAnhUrl(item.product_image);
 
-                  return (
-                    <div key={i} className="khdh-modal-product-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
-                        <img 
-                          src={hinhAnhUrl} 
-                          alt={item.product_name} 
-                          className="khdh-modal-product-img" 
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
-                          }}
-                        />
+                return (
+                  <div key={i} className="khdh-modal-product-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
+                      <img 
+                        src={hinhAnhUrl} 
+                        alt={item.product_name} 
+                        className="khdh-modal-product-img" 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=150';
+                        }}
+                      />
                         <div className="khdh-modal-product-info">
                           <div className="khdh-modal-item-main">
                             <span className="khdh-modal-item-name"><strong>{item.product_name}</strong></span>

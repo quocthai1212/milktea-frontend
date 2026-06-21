@@ -141,11 +141,11 @@ export default function ShipperDashboard() {
     });
   };
 
-  // Xử lý Thay đổi trạng thái Nhận đơn / Giao thành công (Sửa sang POST đồng bộ với backend)
+  // Xử lý Thay đổi trạng thái Nhận đơn / Giao thành công
   const handleConfirmStatus = async () => {
     const { orderId, currentStatus } = confirmModal;
     let endpoint = "";
-    let method = "POST"; // 🌟 Đã chuyển đổi đồng bộ từ PUT sang POST theo Router gốc
+    let method = "POST"; 
     let bodyData = null;
 
     if (!orderId) {
@@ -157,7 +157,7 @@ export default function ShipperDashboard() {
       endpoint = `${API_URL}/api/shipper/donhang/nhan/${orderId}`;
       bodyData = JSON.stringify({ shipper_id: shipperInfo?._id });
     } else if (currentStatus === 'dang_giao') {
-      endpoint = `${API_URL}/api/shipper/donhang/hoan-thanh/${orderId}`; // Đã chỉnh theo URL Backend chuẩn
+      endpoint = `${API_URL}/api/shipper/donhang/hoan-thanh/${orderId}`; 
     }
 
     setConfirmModal({ isOpen: false, orderId: null, currentStatus: '', message: '' });
@@ -186,7 +186,7 @@ export default function ShipperDashboard() {
     }
   };
 
-  // Xử lý báo cáo giao hàng thất bại (Khách bom) (Sửa sang POST đồng bộ với backend)
+  // Xử lý báo cáo giao hàng thất bại (Khách bom)
   const handleFailedStatusSubmit = async () => {
     if (!failedModal.lyDo) {
       showToast("Vui lòng lựa chọn lý do giao thất bại cụ thể!", "error");
@@ -205,7 +205,7 @@ export default function ShipperDashboard() {
 
     try {
       const response = await fetch(`${API_URL}/api/shipper/donhang/that-bai/${currentOrderId}`, {
-        method: 'POST', // 🌟 Đã chuyển đổi đồng bộ từ PUT sang POST theo Router gốc
+        method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ly_do_that_bai: lyDoGuiDi })
       });
@@ -228,9 +228,7 @@ export default function ShipperDashboard() {
     navigate('/login');
   };
 
-  // =========================================================================
-  // 🌟 LỘC HIỂN THỊ THEO TIÊU CHÍ PHÒNG THỦ BACKEND
-  // =========================================================================
+  // LỘC HIỂN THỊ THEO TIÊU CHÍ PHÒNG THỦ BACKEND
   const filteredOrders = useMemo(() => {
     if (!Array.isArray(orders)) return [];
     return orders.filter(order => {
@@ -282,9 +280,7 @@ export default function ShipperDashboard() {
     };
   }, [orders, statsPeriod, shipperInfo?._id]);
   
-  // =========================================================================
-  // 🌟 BADGE ĐẾM SỐ LƯỢNG KHỚP HOÀN HẢO VỚI BACKEND
-  // =========================================================================
+  // BADGE ĐẾM SỐ LƯỢNG KHỚP HOÀN HẢO VỚI BACKEND
   const realTimePending = useMemo(() => {
     if (!Array.isArray(orders)) return 0;
     return orders.filter(order => {
@@ -312,7 +308,7 @@ export default function ShipperDashboard() {
       {/* THANH HEAD ĐẦU TRANG */}
       <header className="shipper-header">
         <div className="shipper-info">
-          <h2>尊 {shipperInfo?.full_name?.toUpperCase() || 'TÀI XẾ HỆ THỐNG'}</h2>
+          <h2>{shipperInfo?.full_name?.toUpperCase() || 'TÀI XẾ HỆ THỐNG'}</h2>
           <span className="online-badge" style={{ marginTop: '4px', display: 'inline-block' }}>● Đang hoạt động</span>
         </div>
         <button onClick={handleLogout} className="btn-shipper-logout">
@@ -415,44 +411,62 @@ export default function ShipperDashboard() {
                           </div>
                         )}
                         
-                        {/* 🛒 CHI TIẾT GIỎ HÀNG VÀ HÌNH ẢNH PHA CHẾ TỪ BACKEND POPULATE */}
-                        <div className="shipper-items-box">
-                          <div className="items-box-header">
-                            <span>🥤 Chi tiết giỏ hàng ({order.items?.length || 0} món)</span>
-                          </div>
-                          <div className="items-grid-container">
-                            {order.items?.map((item, index) => {
-                              const imgName = item.product_id?.image || item.image;
-                              let fullImgUrl = "https://placehold.co/60x60?text=MilkTea"; // Ảnh dự phòng
+                        {/* 🛒 CHI TIẾT GIỎ HÀNG VÀ HÌNH ẢNH ĐÃ ĐƯỢC NÂNG CẤP XỬ LÝ */}
+                        {/* 🛒 CHI TIẾT GIỎ HÀNG VÀ HÌNH ẢNH ĐÃ ĐƯỢC NÂNG CẤP XỬ LÝ */}
+                          <div className="shipper-items-box">
+                            <div className="items-box-header">
+                              <span>🥤 Chi tiết giỏ hàng ({order.items?.length || 0} món)</span>
+                            </div>
+                            <div className="items-grid-container">
+                              {order.items?.map((item, index) => {
+                                // 🛠️ ĐỒNG BỘ CHÍNH XÁC: Backend đã map 'avatar' của Product thành trường phẳng 'item.image'
+                                // Ta vẫn giữ các điều kiện cũ để phòng hờ (Fallback) nếu bạn gọi API từ route khác chưa chuẩn hóa.
+                                const rawImage = item.image || item.product_id?.avatar || item.product_id?.image || item.hinh_anh;
+                                
+                                console.log("Dữ liệu item thực tế nhận được tại Frontend:", item);
+                                let finalImgUrl = "https://placehold.co/60x60?text=MilkTea"; // Ảnh mặc định dự phòng
 
-                              if (imgName) {
-                                fullImgUrl = imgName.startsWith('http') ? imgName : `${API_URL}/uploads/${imgName}`;
-                              }
+                                if (rawImage && typeof rawImage === 'string') {
+                                  // Nếu là đường dẫn URL tuyệt đối từ bên thứ ba (http:// hoặc https://)
+                                  if (rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+                                    finalImgUrl = rawImage;
+                                  } else {
+                                    // Nếu chỉ là tên file tĩnh, tiến hành nối với API tĩnh của Backend
+                                    // Đảm bảo loại bỏ các ký tự dấu gạch chéo dư thừa nếu có
+                                    const cleanImageName = rawImage.startsWith('/') ? rawImage.substring(1) : rawImage;
+                                    finalImgUrl = `${API_URL}/uploads/${cleanImageName}`;
+                                  }
+                                }
 
-                              return (
-                                <div key={index} className="shipper-item-row">
-                                  <img 
-                                    src={fullImgUrl} 
-                                    alt={item.product_name || "Sản phẩm"} 
-                                    className="shipper-item-img"
-                                    onError={(e) => { e.target.src = 'https://placehold.co/60x60?text=No+Img'; }}
-                                  />
-                                  <div className="shipper-item-details">
-                                    <span className="item-name-qty">
-                                      {item.product_name || item.product_id?.name || "Món Trà Sữa"}{' '}
-                                      <strong className="qty-tag">x{item.quantity}</strong>
-                                    </span>
-                                    {item.selected_toppings?.length > 0 && (
-                                      <span className="item-toppings">
-                                        + Topping: {item.selected_toppings.map(t => t.topping_name || t.name).join(', ')}
+                                return (
+                                  <div key={item._id || index} className="shipper-item-row">
+                                    <img 
+                                      src={finalImgUrl} 
+                                      alt={item.product_name || item.product_id?.product_name || "Sản phẩm"} 
+                                      className="shipper-item-img"
+                                      style={{ width: '54px', height: '54px', borderRadius: '8px', objectFit: 'cover' }}
+                                      onError={(e) => { 
+                                        // Chuyển sang ảnh dự phòng gọn gàng nếu link server lỗi hoặc nhận diện sai định dạng
+                                        e.target.onerror = null; 
+                                        e.target.src = 'https://placehold.co/60x60?text=MilkTea'; 
+                                      }}
+                                    />
+                                    <div className="shipper-item-details">
+                                      <span className="item-name-qty">
+                                        {item.product_name || item.product_id?.product_name || "Món Trà Sữa"}{' '}
+                                        <strong className="qty-tag">x{item.quantity}</strong>
                                       </span>
-                                    )}
+                                      {item.selected_toppings?.length > 0 && (
+                                        <span className="item-toppings">
+                                          + Topping: {item.selected_toppings.map(t => t.topping_name || t.name).join(', ')}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })}
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
 
                         <div className="payment-summary">
                           <div className="pay-block">

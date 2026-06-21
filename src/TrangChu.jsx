@@ -104,28 +104,39 @@ const TrangChu = () => {
 
   // MẢNG ẢNH CHI TIẾT DÙNG CHUNG CHO SLIDER VÀ UI
   const mangAnhChiTiet = spXemChiTiet 
-    ? [spXemChiTiet.image, ...(spXemChiTiet.images_gallery || [])].filter(Boolean)
+    ? [spXemChiTiet.avatar, ...(spXemChiTiet.images_gallery || [])].filter(Boolean)
     : [];
 
-  const getHinhAnhUrl = (urlHinh) => {
-    if (!urlHinh) return 'https://placehold.co/600x600?text=No+Image';
-    if (/^(https?:|\/\/|data:)/i.test(urlHinh)) return urlHinh;
-
-    let cleanPath = urlHinh;
-    if (API_URL && cleanPath.includes(API_URL)) {
-      cleanPath = cleanPath.replace(API_URL, '');
-    }
-
-    const bieuThucTrungLap = /(\/uploads\/[^\/]+\/[^\/]+\/)(\1)/i;
-    cleanPath = cleanPath.replace(bieuThucTrungLap, '$1');
-
-    const bieuThucTrungLapNgan = /(\/uploads\/[^\/]+\/)(\1)/i;
-    cleanPath = cleanPath.replace(bieuThucTrungLapNgan, '$1');
-
-    if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
-    return `${API_URL || 'http://localhost:5000'}${cleanPath}`;
-  };
-
+    const getHinhAnhUrl = (urlHinh) => {
+      // 1. Nếu không có ảnh, trả về ảnh placeholder sạch sẽ
+      if (!urlHinh) return 'https://placehold.co/600x600?text=No+Image';
+      
+      let cleanPath = urlHinh.trim();
+  
+      // 2. NẾU LÀ LINK CLOUDINARY HOẶC URL TUYỆT ĐỐI (Chứa http:// hoặc https://)
+      // Tách lấy link gốc từ vị trí http để tránh bị dính chữ /uploads/ phía trước
+      if (cleanPath.includes('http://') || cleanPath.includes('https://')) {
+        const viTriHttp = cleanPath.indexOf('http');
+        return cleanPath.substring(viTriHttp); // Cắt bỏ hoàn toàn các tiền tố rác ở trước http
+      }
+  
+      // 3. Nếu lỡ chứa API_URL thì xóa đi để chuẩn hóa lại từ đầu
+      if (API_URL && cleanPath.includes(API_URL)) {
+        cleanPath = cleanPath.replace(API_URL, '');
+      }
+  
+      // 4. Khử các lỗi lặp thư mục do Backend trả về đường dẫn lồng nhau (nếu có)
+      // Ví dụ biến đổi: /categories/milktea/categories/tra/ thành /categories/tra/ hoặc giữ nguyên tùy cấu trúc upload thực tế của bạn
+      
+      // 5. Đảm bảo path bắt đầu bằng đúng 1 dấu gạch chéo '/'
+      if (!cleanPath.startsWith('/')) {
+        cleanPath = '/' + cleanPath;
+      }
+  
+      // 6. Ghép nối với API_URL hiện tại (mặc định localhost:5000 nếu thiếu)
+      const baseUrl = API_URL || 'http://localhost:5000';
+      return `${baseUrl}${cleanPath}`;
+    };
   useEffect(() => {
     const layGoiYTuBackend = async () => {
       try {
@@ -295,7 +306,13 @@ const TrangChu = () => {
 
   const taoMonTuModal = () => {
     const donGia = tinhDonGiaMotLy();
-    const anhChonHienTai = mangAnhChiTiet[indexAnhHienTai] || spXemChiTiet.image;
+    
+    // ✅ ĐỒNG BỘ ẢNH HOÀN TOÀN: Ưu tiên trường lấy avatar để lưu thông tin ảnh vào LocalStorage
+    const anhChonHienTai = 
+    mangAnhChiTiet?.[indexAnhHienTai] || 
+    spXemChiTiet?.avatar || 
+    "";
+
     return {
       id: `${spXemChiTiet._id}_${Date.now()}`,
       productId: spXemChiTiet._id,
@@ -308,7 +325,6 @@ const TrangChu = () => {
       tongTien: donGia * soLuongModal,
     };
   };
-
   const luuGioHang = (next) => {
     setGioHang(next);
     localStorage.setItem('milktea_gio_hang', JSON.stringify(next));
@@ -318,9 +334,36 @@ const TrangChu = () => {
   const handleXacNhanDatMua = () => {
     const monMoi = taoMonTuModal();
     const gioMoiNhat = docGioHang();
-    luuGioHang([...gioMoiNhat, monMoi]);
+  
+    // 1. Tìm xem trong giỏ hàng đã có món nào giống hệt món này chưa
+    const viTriTrung = gioMoiNhat.findIndex(item => {
+      // Kiểm tra cùng ID sản phẩm và cùng Size
+      const trungSanPhamVaSize = item.productId === monMoi.productId && item.size === monMoi.size;
+      
+      // Kiểm tra danh sách Toppings có giống nhau hoàn toàn không
+      if (item.toppings.length !== monMoi.toppings.length) return false;
+      
+      const trungTopping = item.toppings.every(t1 => 
+        monMoi.toppings.some(t2 => t2.topping_id === t1.topping_id)
+      );
+  
+      return trungSanPhamVaSize && trungTopping;
+    });
+  
+    if (viTriTrung !== -1) {
+      // 2. NẾU TRÙNG: Tăng số lượng và tính lại tổng tiền của dòng đó
+      gioMoiNhat[viTriTrung].soLuong += monMoi.soLuong;
+      gioMoiNhat[viTriTrung].tongTien = gioMoiNhat[viTriTrung].soLuong * gioMoiNhat[viTriTrung].donGia;
+    } else {
+      // 3. NẾU KHÔNG TRÙNG: Thêm món mới hoàn toàn vào giỏ
+      gioMoiNhat.push(monMoi);
+    }
+  
+    // 4. Cập nhật lại giỏ hàng vào LocalStorage và State
+    luuGioHang(gioMoiNhat);
+    
     setModalChiTiet(false);
-    setThongBaoDatHang('Đã thêm món vào giỏ hàng!');
+    setThongBaoDatHang('Đã cập nhật giỏ hàng!');
     setTimeout(() => setThongBaoDatHang(''), 2500);
   };
 
