@@ -97,7 +97,7 @@ export default function KhuyenMaiPage() {
 
   return (
     <div className="khuyenmai-page">
-      <TrangChuHeader />
+      <TrangChuHeader activePage="promotions" />
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
 
       <div className="khuyenmai-content">
